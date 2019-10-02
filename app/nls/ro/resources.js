@@ -1,0 +1,54 @@
+define({
+  "load": {
+    "label": "Se încarcă"
+  },
+  "onboarding": {
+    "title": "Bine ați venit!",
+    "content": "Căutați o adresă pentru a afla mai multe despre locație și zona înconjurătoare.</br>Dacă nu cunoașteți adresa, utilizați una dintre aceste metode de căutare: <ul><li>Faceți clic pe caseta de căutare și introduceți o adresă sau selectați <b>Utilizare locație curentă </b><img alt src='./assets/search-tip.png'/></li><li>Faceți clic pe hartă <div><img alt src='./assets/map-tip.png'/></div></li></ul></br> Rezultatele vor include informații despre obiectele spațiale de interes."
+  },
+  "map": {
+    "label": "Hartă",
+    "description": "Navigați pe hartă folosind tastele cu săgeți pentru a vă deplasa în dreapta, în stânga, sus sau jos. Utilizați tastele plus și minus pentru a mări sau micșora imaginea. Utilizați caseta de căutare pentru a răsfoi conținutul hărții",
+    "miniMapDescription": "Hartă pe care este afișată locația obiectului spațial selectat"
+  },
+  "count": "Total",
+  "noFeatures": "Nu a fost găsit niciun obiect spațial care să corespundă criteriilor de căutare",
+  "error": "Eroare",
+  "licenseError": {
+    "message": "Contul dvs. nu este licențiat să utilizeze aplicații configurabile care nu sunt publice. Solicitați-i administratorului organizației să vă aloce un tip de utilizator care include aplicații esențiale sau o licență pentru aplicații esențiale de completare",
+    "title": "Nelicențiat"
+  },
+  "tools": {
+    "clearLocation": "Golire locație de căutare",
+    "clear": "Golire",
+    "filter": "filtrare",
+    "close": "închidere",
+    "info": "Informații",
+    "collapse": "Restrângere toate",
+    "open": "Extindere toate",
+    "slider": "Căutare distanță",
+    "results": "Rezultate"
+  },
+  "units": {
+    "kilometers": {
+      "singular": "kilometru",
+      "plural": "kilometri",
+      "abbr": "km"
+    },
+    "feet": {
+      "singular": "picior",
+      "plural": "picioare",
+      "abbr": "ft"
+    },
+    "miles": {
+      "singular": "milă",
+      "plural": "mile",
+      "abbr": "mi"
+    },
+    "meters": {
+      "singular": "metru",
+      "plural": "metri",
+      "abbr": "m"
+    }
+  }
+});
