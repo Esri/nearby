@@ -1,0 +1,15 @@
+{
+  "short_name": "nearby",
+  "name": "Find Nearby",
+  "icons": [
+    {
+      "src": "./assets/Add_to_Home.png",
+      "sizes": "512x512"
+    }
+  ],
+  "scope": "/",
+  "start_url": "index.html",
+  "background_color": "#fff",
+  "display": "standalone",
+  "theme_color": "#0079c1"
+}

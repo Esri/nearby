@@ -1,0 +1,105 @@
+{
+  "appid": "",
+  "webmap": "default",
+  "portalUrl": "https://www.arcgis.com",
+  "oauthappid": "",
+  "proxyUrl": "",
+  "title": null,
+  "titleLink": null,
+  "detailTitle": null,
+  "detailContent": null,
+  "socialSharing": true,
+  "zoom": true,
+  "zoomPosition": "top-right",
+  "home": true,
+  "basemapToggle": false,
+  "basemapTogglePosition": "bottom-left",
+  "altBasemap": null,
+  "homePosition": "top-right",
+  "filters": false,
+  "legend": false,
+  "legendPosition": "top-right",
+  "scalebar": false,
+  "scalebarPosition": "bottom-left",
+  "lookupLayers": null,
+  "hideLookupLayers": false,
+  "zoomScale": null,
+  "includeAddressGraphic": true,
+  "includeAddressText": false,
+  "lightColor": "#595959",
+  "darkColor": "#fff",
+  "distance": 1,
+  "units": "kilometers",
+  "noMap": false,
+  "minDistance": 0,
+  "maxDistance": 2,
+  "precision": 2,
+  "labelInputsEnabled": true,
+  "rangeLabelInputsEnabled": true,
+  "includeDistance": true,
+  "showDirections": false,
+  "showResultCount": true,
+  "drawBuffer": true,
+  "singleLocationPolygons": false,
+  "relationship": "intersects",
+  "resultsPanelPreText": null,
+  "resultsPanelPostText": null,
+  "noResultsMessage": null,
+  "groupResultsByLayer": true,
+  "headerBackground": "#9081bc",
+  "headerColor": "#fff",
+  "buttonBackground": "#0079c1",
+  "buttonColor": "#fff",
+  "telemetry": {
+    "prod": {
+      "debug": false,
+      "disabled": false,
+      "amazon": {
+        "userPoolID": "us-east-1:7345bcf2-bffa-4849-a379-a83178f63eef",
+        "app": {
+          "name": "ConfigurableApp:Demo",
+          "id": "eadf587070d04c86b747a938cc655e76",
+          "version": "1.0"
+        }
+      }
+    },
+    "devext": {
+      "debug": true,
+      "disabled": false,
+      "amazon": {
+        "userPoolID": "us-east-1:7345bcf2-bffa-4849-a379-a83178f63eef",
+        "app": {
+          "name": "DemoApp",
+          "id": "eadf587070d04c86b747a938cc655e76",
+          "version": "1.0"
+        }
+      }
+    },
+    "qaext": {
+      "debug": true,
+      "disabled": false,
+      "amazon": {
+        "userPoolID": "us-east-1:7345bcf2-bffa-4849-a379-a83178f63eef",
+        "app": {
+          "name": "DemoApp",
+          "id": "74ec952cdae444389057fbae08043476",
+          "version": "1.0"
+        }
+      }
+    }
+  },
+  "helperServices": {
+    "geometry": {
+      "url": null
+    },
+    "printTask": {
+      "url": null
+    },
+    "elevationSync": {
+      "url": null
+    },
+    "geocode": [{
+      "url": null
+    }]
+  }
+}
