@@ -1,5 +1,5 @@
 /*
-  Copyright 2019 Esri
+  Copyright 2017 Esri
 
   Licensed under the Apache License, Version 2.0 (the "License");
 
@@ -78,6 +78,10 @@ export async function getLookupLayers(props: LookupLayerProps): Promise<__esri.F
 							layer = view.map.findLayerById(id) as esri.FeatureLayer;
 						}
 					}
+					// disable clustering 
+					if (layer && layer.get("featureReduction")) {
+						layer.set("featureReduction", null);
+					}
 					layer && searchableLayers.add(layer);
 				}
 			}
@@ -91,6 +95,10 @@ export async function getLookupLayers(props: LookupLayerProps): Promise<__esri.F
 				if (flayer.popupEnabled) {
 					flayer.outFields = ["*"];
 					returnLayers.push(flayer);
+				}
+				// disable clustering 
+				if (flayer && flayer.get("featureReduction")) {
+					flayer.set("featureReduction", null);
 				}
 			} else if (layer.type === 'map-image') {
 				// if sub layers have been enabled during config
@@ -108,6 +116,7 @@ export async function getLookupLayers(props: LookupLayerProps): Promise<__esri.F
 										view.map.add(l);
 										returnLayers.push(l);
 									});
+									sublayer.visible = false;
 								}
 							});
 						} else {
@@ -115,6 +124,7 @@ export async function getLookupLayers(props: LookupLayerProps): Promise<__esri.F
 								view.map.add(l);
 								returnLayers.push(l);
 							});
+							sublayer.visible = false;
 						}
 					});
 			}
@@ -177,9 +187,7 @@ async function _addLocationGraphics(graphic, config, view) {
 						},
 						text: displayText,
 						color,
-						xoffset: 8,
-						yoffset: 4,
-						horizontalAlignment: 'left'
+						horizontalAlignment: 'center'
 					})
 				})
 			);
@@ -191,6 +199,7 @@ async function _addLocationGraphics(graphic, config, view) {
 					symbol: new TextSymbol({
 						color,
 						text: '\ue61d', // esri-icon-map-pin
+						yoffset: 10,
 						font: {
 							size: 20,
 							family: 'calcite-web-icons'

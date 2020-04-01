@@ -1,15 +1,3 @@
-/*
-  Copyright 2019 Esri
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.​
-*/
 /// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
 /// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
 import { subclass, declared, property } from 'esri/core/accessorSupport/decorators';
@@ -69,7 +57,7 @@ const CSS = {
 const expandSVG = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26"><polygon points="23.6 14.95 23.6 23.63 14.94 23.63 14.94 22.19 21.16 22.19 13.83 14.81 14.84 13.8 22.17 21.18 22.17 14.95 23.6 14.95" /><polygon points="11.06 3.83 11.06 2.4 2.4 2.4 2.4 11.07 3.83 11.07 3.83 4.84 11.27 12.41 12.28 11.4 4.84 3.83 11.06 3.83" /><path d="M24,1a1,1,0,0,1,1,1V24a1,1,0,0,1-1,1H2a1,1,0,0,1-1-1V2A1,1,0,0,1,2,1H24m0-1H2A2,2,0,0,0,0,2V24a2,2,0,0,0,2,2H24a2,2,0,0,0,2-2V2a2,2,0,0,0-2-2Z" /></svg>;
 const collapseSVG = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26"><polygon points="14.88 23.48 14.88 14.81 23.54 14.81 23.54 16.25 17.32 16.25 25.47 24.41 24.46 25.42 16.31 17.26 16.31 23.48 14.88 23.48" /><polygon points="2.75 9.97 2.75 11.4 11.4 11.4 11.4 2.73 9.97 2.73 9.97 8.96 1.82 0.8 0.81 1.81 8.96 9.97 2.75 9.97" /><path d="M24,1a1,1,0,0,1,1,1V24a1,1,0,0,1-1,1H2a1,1,0,0,1-1-1V2A1,1,0,0,1,2,1H24m0-1H2A2,2,0,0,0,0,2V24a2,2,0,0,0,2,2H24a2,2,0,0,0,2-2V2a2,2,0,0,0-2-2Z" /></svg>;
 @subclass('app.DisplayLookupResults')
-class DisplayLookupResults extends declared(Widget, Accessor) {
+class DisplayLookupResults extends declared(Widget) {
 	//--------------------------------------------------------------------------
 	//
 	//  Properties
@@ -305,8 +293,11 @@ class DisplayLookupResults extends declared(Widget, Accessor) {
 
 			this._featureResults = [];
 			const { groupResultsByLayer } = this.config;
-			// Reverse the results so the order matches the legend
-			results.reverse();
+			// Reverse the results so the order matches the legend but  
+			// if singleLocationPolygons is true display the polygon result at the top
+			if (!this.config.singleLocationPolygons) {
+				results.reverse();
+			}
 			// Loop through the feaures 
 			results.forEach(result => {
 				// do we have features? 
@@ -371,7 +362,7 @@ class DisplayLookupResults extends declared(Widget, Accessor) {
 		const { relationship, units, singleLocationPolygons } = this.config;
 		const type = layer.layer.geometryType;
 		// we need return geom since we have to get distances and zoom to selected 
-		const query = layer.createQuery();
+		const query = layer.layer.createQuery();
 		// Find features that are within x distance of search geometry
 		query.geometry = location;
 
@@ -422,9 +413,11 @@ class DisplayLookupResults extends declared(Widget, Accessor) {
 		}
 		if (view && view.container && getComputedStyle(this.view.container).display === "none") {
 			return layerView.layer;
-		} else if (view && view.spatialReference && view.spatialReference.wkid && unsupportedIds.indexOf(view.spatialReference.wkid.toString()) !== -1) {
+		} else if (view && view.spatialReference && (!view.spatialReference.isGeographic && !view.spatialReference.isWGS84 && !view.spatialReference.isWebMercator)) {
 			return layerView.layer;
-		} else {
+		} /*else if (view && view.spatialReference && view.spatialReference.wkid && unsupportedIds.indexOf(view.spatialReference.wkid.toString()) !== -1) {
+			return layerView.layer;
+		}*/ else {
 			return layerView;
 		}
 	}
@@ -490,8 +483,8 @@ class DisplayLookupResults extends declared(Widget, Accessor) {
 
 			// sort the features based on the distance
 			features.sort((a, b) => {
-				const alookup = a.attributes.lookupDistance ? Number(a.attributes.lookupDistance) : null;
-				const blookup = b.attributes.lookupDistance ? Number(b.attributes.lookupDistance) : null;
+				const alookup = a.attributes.lookupDistance ? parseFloat(a.attributes.lookupDistance.replace(/[,]/g, '')) : null;
+				const blookup = b.attributes.lookupDistance ? parseFloat(b.attributes.lookupDistance.replace(/[,]/g, '')) : null;
 				return alookup - blookup;
 			});
 		}

@@ -26,8 +26,8 @@ $scrollable-container-height: calc(100vh - 200px);
 $scrollable-container-height-mobile: calc(100% - 320px);
 $scrollable-container-height-small: calc(100vh - 240px);
 $padding-left: 16px;
-@import "./app/calcite-web/dist/sass/calcite-web";
-@import "./app/components/Share/Share/css/Share";
+@import "./app/calcite-web/dist/sass/calcite-web.scss";
+@import "./app/components/Share/Share/css/Share.scss";
 
 /* overwrite calcite styles that mess with the map height on ios */
 body {
@@ -225,7 +225,7 @@ html[dir="rtl"] .top-nav-title {
 
 .panel-refine-results.no-filter {
   padding-left: 6px;
-  padding-top: 22px;
+  padding-top: 30px;
   padding-right: 6px;
 }
 
@@ -248,9 +248,18 @@ html[dir="rtl"] .top-nav-title {
   text-align: right;
 }
 
-r .esri-slider__min.bottom-label {
+.esri-slider--horizontal .esri-slider__max,
+.esri-slider--horizontal .esri-slider__min {
+  overflow: hidden;
+}
+
+.esri-slider__min.bottom-label {
   left: 0;
   text-align: left;
+}
+
+.esri-slider--horizontal .esri-slider__label {
+  top: -38px;
 }
 
 .distance {
@@ -326,7 +335,6 @@ r .esri-slider__min.bottom-label {
   background-color: #fff;
   color: #6d6d6d;
   margin-right: 0.5rem;
-  width: 18px;
   height: 18px;
   text-align: center;
 }
@@ -407,7 +415,8 @@ ul.accordion-content {
 }
 
 .flex-count {
-  flex: 0 0 18px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .flex-arrow {
@@ -584,7 +593,7 @@ li h4.esri-feature__title {
 }
 
 .scrollable-content {
-  max-height: $scrollable-container-height;
+  height: $scrollable-container-height;
   overflow: auto;
 }
 
@@ -664,6 +673,10 @@ li h4.esri-feature__title {
   overflow: auto;
   margin-left: 0;
   margin-right: 0;
+
+  .esri-share {
+    margin-bottom: 150px;
+  }
 }
 
 #detailPanel.info-triggered {
@@ -728,7 +741,13 @@ li h4.esri-feature__title {
     padding-right: 36px;
     padding-top: 21px;
     padding-bottom: 4px;
+
   }
+
+  .esri-share {
+    padding-bottom: 50px;
+  }
+
 
   .details-content {
     margin-bottom: 0;
@@ -892,7 +911,7 @@ button.directions-button {
   }
 
   #detailPanel.info-triggered {
-    max-height: calc(100%-140px);
+    max-height: calc(100% - 90px);
   }
 
   #detailPanel .details-content,
@@ -901,6 +920,7 @@ button.directions-button {
     padding-right: 36px;
     padding-bottom: 15px;
   }
+
 
   .no-map .column-10 {
     max-width: 100vw;
@@ -913,7 +933,7 @@ button.directions-button {
 
 
   .scrollable-content {
-    max-height: $scrollable-container-height-small;
+    height: $scrollable-container-height-small;
     overflow: auto;
   }
 

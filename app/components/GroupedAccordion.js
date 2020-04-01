@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -24,13 +27,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/support/widget", "esri/core/promiseUtils", "esri/widgets/Feature", "esri/core/Handles", "./Accordion"], function (require, exports, __extends, __decorate, decorators_1, widget_1, promiseUtils, Feature_1, Handles_1, Accordion_1) {
+define(["require", "exports", "esri/core/promiseUtils", "./Accordion", "esri/core/accessorSupport/decorators", "esri/widgets/Feature", "esri/core/Handles", "esri/widgets/support/widget"], function (require, exports, promiseUtils, Accordion_1, decorators_1, Feature_1, Handles_1, widget_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     promiseUtils = __importStar(promiseUtils);
+    Accordion_1 = __importDefault(Accordion_1);
     Feature_1 = __importDefault(Feature_1);
     Handles_1 = __importDefault(Handles_1);
-    Accordion_1 = __importDefault(Accordion_1);
     var CSS = {
         base: 'accordion',
         basejs: 'js-accordion',
@@ -156,13 +159,17 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             if (graphic && graphic.attributes && graphic.attributes.lookupDistance && this.config.includeDistance) {
                 distNode.innerHTML = this.convertUnitText(graphic.attributes.lookupDistance, this.config.units);
             }
-            node.addEventListener("click", function () {
-                _this.zoom = true;
-                _this._selectAccordionSection(node.parentElement, graphic);
-            });
-            node.addEventListener("mouseover", promiseUtils.debounce(function () {
-                _this.hoveredItem = feature;
-            }));
+            // Add click event if results are interactive 
+            var clickableResults = this.config.interactiveResults === false ? false : true;
+            if (clickableResults) {
+                node.addEventListener("click", function () {
+                    _this.zoom = true;
+                    _this._selectAccordionSection(node.parentElement, graphic);
+                });
+                node.addEventListener("mouseover", promiseUtils.debounce(function () {
+                    _this.hoveredItem = feature;
+                }));
+            }
         };
         GroupedAccordion.prototype.clear = function () {
             this.featureResults = null;

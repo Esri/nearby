@@ -7682,7 +7682,7 @@ html[dir="rtl"] .top-nav-title {
 
 .panel-refine-results.no-filter {
   padding-left: 6px;
-  padding-top: 22px;
+  padding-top: 30px;
   padding-right: 6px; }
 
 .esri-slider.esri-widget {
@@ -7700,9 +7700,16 @@ html[dir="rtl"] .top-nav-title {
   right: 0;
   text-align: right; }
 
-r .esri-slider__min.bottom-label {
+.esri-slider--horizontal .esri-slider__max,
+.esri-slider--horizontal .esri-slider__min {
+  overflow: hidden; }
+
+.esri-slider__min.bottom-label {
   left: 0;
   text-align: left; }
+
+.esri-slider--horizontal .esri-slider__label {
+  top: -38px; }
 
 .distance {
   padding-left: 0.25em;
@@ -7765,7 +7772,6 @@ r .esri-slider__min.bottom-label {
   background-color: #fff;
   color: #6d6d6d;
   margin-right: 0.5rem;
-  width: 18px;
   height: 18px;
   text-align: center; }
 
@@ -7831,7 +7837,8 @@ ul.accordion-content {
   padding-left: 16px; }
 
 .flex-count {
-  flex: 0 0 18px; }
+  display: inline-flex;
+  align-items: center; }
 
 .flex-arrow {
   flex: 0 0 20px; }
@@ -7959,7 +7966,7 @@ li h4.esri-feature__title {
     left: -9999px; }
 
 .scrollable-content {
-  max-height: calc(100vh - 200px);
+  height: calc(100vh - 200px);
   overflow: auto; }
 
 /* Detail Panel styles includes collapse all / open all links*/
@@ -8029,6 +8036,8 @@ li h4.esri-feature__title {
   overflow: auto;
   margin-left: 0;
   margin-right: 0; }
+  #detailPanel .esri-share {
+    margin-bottom: 150px; }
 
 #detailPanel.info-triggered {
   top: 50px; }
@@ -8080,6 +8089,9 @@ li h4.esri-feature__title {
   padding-right: 36px;
   padding-top: 21px;
   padding-bottom: 4px; }
+
+#detailPanel .esri-share {
+  padding-bottom: 50px; }
 
 #detailPanel .details-content {
   margin-bottom: 0; }
@@ -8205,7 +8217,7 @@ button.directions-button {
   #detailPanel {
     max-height: calc(100% - 190px); }
   #detailPanel.info-triggered {
-    max-height: calc(100%-140px); }
+    max-height: calc(100% - 90px); }
   #detailPanel .details-content,
   #detailPanel .details-title {
     padding-left: 47px;
@@ -8216,7 +8228,7 @@ button.directions-button {
   .mini-map-panel {
     height: calc(100% - 124px); }
   .scrollable-content {
-    max-height: calc(100vh - 240px);
+    height: calc(100vh - 240px);
     overflow: auto; }
   .panel.app-header {
     height: 50px; }

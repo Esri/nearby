@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -15,10 +18,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -59,11 +63,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/Accessor", "esri/core/Handles", "esri/widgets/support/widget", "../utilites/geometryUtils", "esri/core/promiseUtils", "esri/core/watchUtils", "../utilites/lookupLayerUtils", "esri/views/layers/support/FeatureFilter", "esri/views/layers/support/FeatureEffect", "./GroupedAccordion", "esri/widgets/Expand", "dojo/i18n!../nls/resources"], function (require, exports, __extends, __decorate, decorators_1, Widget_1, Accessor_1, Handles_1, widget_1, geometryUtils, promiseUtils, watchUtils, lookupLayerUtils, FeatureFilter_1, FeatureEffect_1, GroupedAccordion_1, Expand_1, i18n) {
+define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/Handles", "esri/widgets/support/widget", "../utilites/geometryUtils", "esri/core/promiseUtils", "esri/core/watchUtils", "../utilites/lookupLayerUtils", "esri/views/layers/support/FeatureFilter", "esri/views/layers/support/FeatureEffect", "./GroupedAccordion", "esri/widgets/Expand", "dojo/i18n!../nls/resources"], function (require, exports, __extends, __decorate, decorators_1, Widget_1, Handles_1, widget_1, geometryUtils, promiseUtils, watchUtils, lookupLayerUtils, FeatureFilter_1, FeatureEffect_1, GroupedAccordion_1, Expand_1, i18n) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     Widget_1 = __importDefault(Widget_1);
-    Accessor_1 = __importDefault(Accessor_1);
     Handles_1 = __importDefault(Handles_1);
     geometryUtils = __importStar(geometryUtils);
     promiseUtils = __importStar(promiseUtils);
@@ -315,8 +318,11 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                     return [2 /*return*/, Promise.all(promises).then(function (results) {
                             _this._featureResults = [];
                             var groupResultsByLayer = _this.config.groupResultsByLayer;
-                            // Reverse the results so the order matches the legend
-                            results.reverse();
+                            // Reverse the results so the order matches the legend but  
+                            // if singleLocationPolygons is true display the polygon result at the top
+                            if (!_this.config.singleLocationPolygons) {
+                                results.reverse();
+                            }
                             // Loop through the feaures 
                             results.forEach(function (result) {
                                 // do we have features? 
@@ -392,7 +398,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             var _a = this.config, relationship = _a.relationship, units = _a.units, singleLocationPolygons = _a.singleLocationPolygons;
             var type = layer.layer.geometryType;
             // we need return geom since we have to get distances and zoom to selected 
-            var query = layer.createQuery();
+            var query = layer.layer.createQuery();
             // Find features that are within x distance of search geometry
             query.geometry = location;
             // Always set with points and lines but also set for 
@@ -442,9 +448,11 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             if (view && view.container && getComputedStyle(this.view.container).display === "none") {
                 return layerView.layer;
             }
-            else if (view && view.spatialReference && view.spatialReference.wkid && unsupportedIds.indexOf(view.spatialReference.wkid.toString()) !== -1) {
+            else if (view && view.spatialReference && (!view.spatialReference.isGeographic && !view.spatialReference.isWGS84 && !view.spatialReference.isWebMercator)) {
                 return layerView.layer;
-            }
+            } /*else if (view && view.spatialReference && view.spatialReference.wkid && unsupportedIds.indexOf(view.spatialReference.wkid.toString()) !== -1) {
+                return layerView.layer;
+            }*/
             else {
                 return layerView;
             }
@@ -516,8 +524,8 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 });
                 // sort the features based on the distance
                 features.sort(function (a, b) {
-                    var alookup = a.attributes.lookupDistance ? Number(a.attributes.lookupDistance) : null;
-                    var blookup = b.attributes.lookupDistance ? Number(b.attributes.lookupDistance) : null;
+                    var alookup = a.attributes.lookupDistance ? parseFloat(a.attributes.lookupDistance.replace(/[,]/g, '')) : null;
+                    var blookup = b.attributes.lookupDistance ? parseFloat(b.attributes.lookupDistance.replace(/[,]/g, '')) : null;
                     return alookup - blookup;
                 });
             }
@@ -621,7 +629,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.subclass('app.DisplayLookupResults')
         ], DisplayLookupResults);
         return DisplayLookupResults;
-    }(decorators_1.declared(Widget_1.default, Accessor_1.default)));
+    }(decorators_1.declared(Widget_1.default)));
     exports.default = DisplayLookupResults;
 });
 //# sourceMappingURL=DisplayLookupResults.js.map

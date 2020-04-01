@@ -1,24 +1,15 @@
-/*
-  Copyright 2019 Esri
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.​
-*/
+import * as promiseUtils from 'esri/core/promiseUtils';
+
+import Accordion, { AccordionProps } from './Accordion';
 /// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
 /// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-import { subclass, declared, property } from 'esri/core/accessorSupport/decorators';
-import { tsx } from 'esri/widgets/support/widget';
-import * as promiseUtils from 'esri/core/promiseUtils';
+import { declared, property, subclass } from 'esri/core/accessorSupport/decorators';
+
 import Feature from 'esri/widgets/Feature';
 import Handles from 'esri/core/Handles';
+import { tsx } from 'esri/widgets/support/widget';
+
 import esri = __esri;
-import Accordion, { AccordionProps } from './Accordion';
 
 const CSS = {
     base: 'accordion',
@@ -199,14 +190,17 @@ class GroupedAccordion extends declared(Accordion) {
             distNode.innerHTML = this.convertUnitText(graphic.attributes.lookupDistance, this.config.units);
         }
 
-        node.addEventListener("click", () => {
-            this.zoom = true;
-            this._selectAccordionSection(node.parentElement, graphic);
-
-        });
-        node.addEventListener("mouseover", promiseUtils.debounce(() => {
-            this.hoveredItem = feature;
-        }));
+        // Add click event if results are interactive 
+        const clickableResults = this.config.interactiveResults === false ? false : true;
+        if (clickableResults) {
+            node.addEventListener("click", () => {
+                this.zoom = true;
+                this._selectAccordionSection(node.parentElement, graphic);
+            });
+            node.addEventListener("mouseover", promiseUtils.debounce(() => {
+                this.hoveredItem = feature;
+            }));
+        }
     }
     clear() {
         this.featureResults = null;

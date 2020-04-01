@@ -1,5 +1,5 @@
 /*
-  Copyright 2019 Esri
+  Copyright 2017 Esri
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -10,19 +10,23 @@
   See the License for the specific language governing permissions and
   limitations under the License.​
 */
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -214,10 +218,23 @@ define(["require", "exports", "telemetry/telemetry.dojo", "esri/widgets/Search",
             // Add a page header
             config.title = config.title || item.title;
             domHelper_1.setPageTitle(config.title);
-            if (!config.appid && (!detailTitle || !detailContent)) {
-                detailTitle = !detailTitle ? i18n.onboarding.title : detailTitle;
-                detailContent = !detailContent ? i18n.onboarding.content : detailContent;
+            // localize onboarding if custom text isn't set
+            var defaultTitle = "Welcome!";
+            var defaultContent = "Search for an address to learn more about the location and its surrounding area.<br />If you don't know the address, use one of these search methods: <ul><li>Click the search box and type in an address or choose <b>Use current location</b></li><li>Click within the map</li></ul><br /> Results will include information about features of interest.";
+            if (!detailTitle || (detailTitle && detailTitle === defaultTitle)) {
+                detailTitle = i18n.onboarding.title;
             }
+            else {
+                detailTitle = detailTitle;
+            }
+            if (!detailContent || (detailContent && detailContent.trim() == defaultContent.trim())) {
+                detailContent = i18n.onboarding.content;
+            }
+            else {
+                detailContent = detailContent;
+            }
+            //detailContent = !detailContent ? i18n.onboarding.content : detailContent;
+            //	}
             if (detailTitle || detailContent || socialSharing) {
                 this._detailPanel = new DetailPanel_1.default({
                     title: detailTitle || null,
@@ -226,11 +243,11 @@ define(["require", "exports", "telemetry/telemetry.dojo", "esri/widgets/Search",
                     sharing: socialSharing,
                     container: document.getElementById('detailPanel')
                 });
-                // If there is a value in local storage don't open panel when app loads
-                var detailPanelShown = localStorage && localStorage.getItem("detailPanelShow") ? true : false;
+                // If there is a value in session storage don't open panel when app loads
+                var detailPanelShown = sessionStorage && sessionStorage.getItem("detailPanelShow") ? true : false;
                 if (!detailPanelShown) {
                     this._detailPanel.showPanel();
-                    localStorage && localStorage.setItem("detailPanelShow", "true");
+                    sessionStorage && sessionStorage.setItem("detailPanelShow", "true");
                 }
             }
             var header = new Header_1.default({
@@ -342,6 +359,7 @@ define(["require", "exports", "telemetry/telemetry.dojo", "esri/widgets/Search",
                 container: container
             };
             if (searchConfig) {
+                console.log("SC", searchConfig);
                 var sources = searchConfig.sources, activeSourceIndex = searchConfig.activeSourceIndex, enableSearchingAll = searchConfig.enableSearchingAll;
                 if (sources) {
                     searchProperties.sources = sources.filter(function (source) {
@@ -363,9 +381,8 @@ define(["require", "exports", "telemetry/telemetry.dojo", "esri/widgets/Search",
                 }
                 searchProperties.searchAllEnabled =
                     enableSearchingAll && enableSearchingAll === false ? false : true;
-                if (activeSourceIndex &&
-                    searchProperties.sources &&
-                    searchProperties.sources.length >= activeSourceIndex) {
+                if (activeSourceIndex != null && activeSourceIndex != undefined &&
+                    (searchProperties === null || searchProperties === void 0 ? void 0 : searchProperties.sources.length) >= activeSourceIndex) {
                     searchProperties.activeSourceIndex = activeSourceIndex;
                 }
             }

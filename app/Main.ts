@@ -1,5 +1,5 @@
 /*
-  Copyright 2019 Esri
+  Copyright 2017 Esri
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -179,10 +179,23 @@ class LocationApp {
 		config.title = config.title || item.title;
 		setPageTitle(config.title);
 
-		if (!config.appid && (!detailTitle || !detailContent)) {
-			detailTitle = !detailTitle ? i18n.onboarding.title : detailTitle;
-			detailContent = !detailContent ? i18n.onboarding.content : detailContent;
+		// localize onboarding if custom text isn't set
+		const defaultTitle = "Welcome!";
+		const defaultContent = "Search for an address to learn more about the location and its surrounding area.<br />If you don't know the address, use one of these search methods: <ul><li>Click the search box and type in an address or choose <b>Use current location</b></li><li>Click within the map</li></ul><br /> Results will include information about features of interest.";
+
+		if (!detailTitle || (detailTitle && detailTitle === defaultTitle)) {
+			detailTitle = i18n.onboarding.title;
+		} else {
+			detailTitle = detailTitle;
 		}
+
+		if (!detailContent || (detailContent && detailContent.trim() == defaultContent.trim())) {
+			detailContent = i18n.onboarding.content;
+		} else {
+			detailContent = detailContent;
+		}
+		//detailContent = !detailContent ? i18n.onboarding.content : detailContent;
+		//	}
 
 		if (detailTitle || detailContent || socialSharing) {
 			this._detailPanel = new DetailPanel({
@@ -192,11 +205,11 @@ class LocationApp {
 				sharing: socialSharing,
 				container: document.getElementById('detailPanel')
 			});
-			// If there is a value in local storage don't open panel when app loads
-			const detailPanelShown = localStorage && localStorage.getItem("detailPanelShow") ? true : false;
+			// If there is a value in session storage don't open panel when app loads
+			const detailPanelShown = sessionStorage && sessionStorage.getItem("detailPanelShow") ? true : false;
 			if (!detailPanelShown) {
 				this._detailPanel.showPanel();
-				localStorage && localStorage.setItem("detailPanelShow", "true");
+				sessionStorage && sessionStorage.setItem("detailPanelShow", "true");
 			}
 		}
 
@@ -304,6 +317,7 @@ class LocationApp {
 		};
 
 		if (searchConfig) {
+			console.log("SC", searchConfig);
 			const { sources, activeSourceIndex, enableSearchingAll } = searchConfig;
 			if (sources) {
 
@@ -327,9 +341,8 @@ class LocationApp {
 			searchProperties.searchAllEnabled =
 				enableSearchingAll && enableSearchingAll === false ? false : true;
 			if (
-				activeSourceIndex &&
-				searchProperties.sources &&
-				searchProperties.sources.length >= activeSourceIndex
+				activeSourceIndex != null && activeSourceIndex != undefined &&
+				searchProperties?.sources.length >= activeSourceIndex
 			) {
 				searchProperties.activeSourceIndex = activeSourceIndex;
 			}

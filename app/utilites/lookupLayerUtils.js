@@ -1,8 +1,9 @@
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -82,6 +83,10 @@ define(["require", "exports", "esri/core/Collection", "esri/views/layers/support
                                         layer = view.map.findLayerById(id);
                                     }
                                 }
+                                // disable clustering 
+                                if (layer && layer.get("featureReduction")) {
+                                    layer.set("featureReduction", null);
+                                }
                                 layer && searchableLayers.add(layer);
                             }
                         }
@@ -95,6 +100,10 @@ define(["require", "exports", "esri/core/Collection", "esri/views/layers/support
                             if (flayer.popupEnabled) {
                                 flayer.outFields = ["*"];
                                 returnLayers.push(flayer);
+                            }
+                            // disable clustering 
+                            if (flayer && flayer.get("featureReduction")) {
+                                flayer.set("featureReduction", null);
                             }
                         }
                         else if (layer.type === 'map-image') {
@@ -112,6 +121,7 @@ define(["require", "exports", "esri/core/Collection", "esri/views/layers/support
                                                     view.map.add(l);
                                                     returnLayers.push(l);
                                                 });
+                                                sublayer.visible = false;
                                             }
                                         });
                                     }
@@ -120,6 +130,7 @@ define(["require", "exports", "esri/core/Collection", "esri/views/layers/support
                                             view.map.add(l);
                                             returnLayers.push(l);
                                         });
+                                        sublayer.visible = false;
                                     }
                                 });
                         }
@@ -193,9 +204,7 @@ define(["require", "exports", "esri/core/Collection", "esri/views/layers/support
                                         },
                                         text: displayText_1,
                                         color: color,
-                                        xoffset: 8,
-                                        yoffset: 4,
-                                        horizontalAlignment: 'left'
+                                        horizontalAlignment: 'center'
                                     })
                                 }));
                             }
@@ -205,6 +214,7 @@ define(["require", "exports", "esri/core/Collection", "esri/views/layers/support
                                     symbol: new symbols_1.TextSymbol({
                                         color: color,
                                         text: '\ue61d',
+                                        yoffset: 10,
                                         font: {
                                             size: 20,
                                             family: 'calcite-web-icons'

@@ -1,5 +1,5 @@
 /*
-  Copyright 2019 Esri
+  Copyright 2017 Esri
 
   Licensed under the Apache License, Version 2.0 (the "License");
 
@@ -75,7 +75,7 @@ export async function getDistances(params: DistanceParams) {
 		}
 
 		if (feature && feature.attributes) {
-			feature.attributes.lookupDistance = distance !== null ? distance.toLocaleString(locale, { maximumFractionDigits: 2 }) : null;
+			feature.attributes.lookupDistance = distance !== null ? distance.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
 		}
 	});
 }

@@ -1,24 +1,15 @@
-/*
-  Copyright 2019 Esri
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.​
-*/
+import * as promiseUtils from 'esri/core/promiseUtils';
+
+import Accordion, { AccordionProps, ActionButton } from './Accordion';
 /// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
 /// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-import { subclass, declared, property } from 'esri/core/accessorSupport/decorators';
-import { tsx } from 'esri/widgets/support/widget';
-import * as promiseUtils from 'esri/core/promiseUtils';
+import { declared, property, subclass } from 'esri/core/accessorSupport/decorators';
+
 import Feature from 'esri/widgets/Feature';
 import Handles from 'esri/core/Handles';
+import { tsx } from 'esri/widgets/support/widget';
+
 import esri = __esri;
-import Accordion, { ActionButton, AccordionProps } from './Accordion';
 
 const CSS = {
 	base: 'accordion',
@@ -40,13 +31,7 @@ const CSS = {
 	scrollable: "scrollable-content",
 	actionBar: 'action-bar'
 };
-export interface ActionButton {
-	icon: string;
-	id: string;
-	name: string;
-	class?: string;
-	handleClick: (name: string, graphic: esri.Graphic) => void;
-}
+
 interface FeatureAccordionProps extends AccordionProps {
 	features: esri.Graphic[];
 }
@@ -141,13 +126,17 @@ class FeatureAccordion extends declared(Accordion) {
 			const titleNode = node.querySelector(`.${CSS.titleArea}`);
 			const container = node.querySelector(`.${CSS.templateContent}`) as HTMLElement;
 
-			titleNode &&
-				titleNode.parentElement &&
-				titleNode.parentElement.addEventListener('click', () => this._selectAccordionSection(node, graphic));
-			container && container.addEventListener('click', () => this._selectAccordionSection(node, graphic));
-			container && container.addEventListener("mouseover", promiseUtils.debounce(() => {
-				this.hoveredItem = graphic;
-			}));
+			// Add click event if results aren't interactive 
+			const clickableResults = this.config.interactiveResults === false ? false : true;
+			if (clickableResults) {
+				titleNode &&
+					titleNode.parentElement &&
+					titleNode.parentElement.addEventListener('click', () => this._selectAccordionSection(node, graphic));
+				container && container.addEventListener('click', () => this._selectAccordionSection(node, graphic));
+				container && container.addEventListener("mouseover", promiseUtils.debounce(() => {
+					this.hoveredItem = graphic;
+				}));
+			}
 			const graphic = node['data-feature'];
 
 			const feature = new Feature({

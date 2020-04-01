@@ -20,10 +20,25 @@
   "_resolved": "github:Esri/calcite-web#152e2c81304e3526dec7d20fadadafdd73fbdc53",
   "_spec": "Esri/calcite-web#v1.2.5",
   "_where": "/Users/kell3008/Sites/GitHub/arcgis-portal-app-templates/Lookup",
+  "author": {
+    "name": "Esri Portland R&D Center",
+    "email": "<portland@esri.com",
+    "url": "http://pdx.esri.com/"
+  },
   "bugs": {
     "url": "https://github.com/esri/calcite-web/issues"
   },
   "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Paul C. Pederson",
+      "email": "ppederson@esri.com"
+    },
+    {
+      "name": "Nikolas Wise",
+      "email": "nwise@esri.com"
+    }
+  ],
   "deprecated": false,
   "description": "SASS & CSS Framework for Esri websites",
   "devDependencies": {

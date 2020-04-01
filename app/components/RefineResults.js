@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -17,10 +20,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/Accessor", "esri/core/Handles", "dojo/i18n!../nls/resources", "esri/widgets/support/widget", "esri/widgets/Slider"], function (require, exports, __extends, __decorate, decorators_1, Widget_1, Accessor_1, Handles_1, i18n, widget_1, Slider_1) {
+define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/Handles", "dojo/i18n!../nls/resources", "esri/widgets/support/widget", "esri/widgets/Slider"], function (require, exports, __extends, __decorate, decorators_1, Widget_1, Handles_1, i18n, widget_1, Slider_1) {
     "use strict";
     Widget_1 = __importDefault(Widget_1);
-    Accessor_1 = __importDefault(Accessor_1);
     Handles_1 = __importDefault(Handles_1);
     Slider_1 = __importDefault(Slider_1);
     var CSS = {
@@ -70,10 +72,12 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 max: maxDistance,
                 values: [distance],
                 precision: precision,
-                rangeLabelsVisible: true,
+                visibleElements: {
+                    labels: true,
+                    rangeLabels: true
+                },
                 labelInputsEnabled: labelInputsEnabled,
                 rangeLabelInputsEnabled: rangeLabelInputsEnabled,
-                labelsVisible: true,
                 snapOnClickEnabled: true,
                 container: node
             });
@@ -84,7 +88,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             locale = locale || "en";
             // Append units to range labels
             distanceSlider.labelFormatFunction = function (value, type) {
-                if (type === "min" || type === "max" || type === "value") {
+                if (type === "min" || type === "max") {
                     return value.toLocaleString(locale) + " " + convertedUnits;
                 }
                 else {
@@ -150,7 +154,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.subclass('app.RefineResults')
         ], RefineResults);
         return RefineResults;
-    }(decorators_1.declared(Widget_1.default, Accessor_1.default)));
+    }(decorators_1.declared(Widget_1.default)));
     return RefineResults;
 });
 //# sourceMappingURL=RefineResults.js.map

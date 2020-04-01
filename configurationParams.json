@@ -152,7 +152,7 @@
       "fieldName": "lookupLayers",
       "label": "Select the layers to include in the search results.",
       "layerOptions": {
-        "supportedTypes": ["FeatureLayer", "FeatureCollection", "MapServiceLayer"]
+        "supportedTypes": ["FeatureLayer", "MapServiceLayer"]
       }
     }, {
       "type": "subcategory",
@@ -226,10 +226,6 @@
       "label": "Add zoom buttons"
     }, {
       "type": "boolean",
-      "fieldName": "legend",
-      "label": "Add legend"
-    }, {
-      "type": "boolean",
       "fieldName": "scalebar",
       "label": "Add scalebar"
     }, {
@@ -238,10 +234,44 @@
       "fieldName": "basemapToggle",
       "label": "Add basemap toggle button",
       "items": [{
-        "type": "basemaps",
+        "type": "orgBasemaps",
         "fieldName": "altBasemap",
         "label": "Select alternate basemap"
       }]
+    }, {
+      "type": "conditional",
+      "condition": false,
+      "fieldName": "legend",
+      "label": "Legend",
+      "items": [{
+          "type": "string",
+          "fieldName": "legendPosition",
+          "label": "Legend position",
+          "tooltip": "Configure the position of the legend tool",
+          "options": [{
+              "label": "Bottom left",
+              "value": "bottom-left"
+            },
+            {
+              "label": "Bottom right",
+              "value": "bottom-right"
+            },
+            {
+              "label": "Top left",
+              "value": "top-left"
+            },
+            {
+              "label": "Top right",
+              "value": "top-right"
+            }
+          ]
+        },
+        {
+          "type": "boolean",
+          "fieldName": "legendOpenAtStart",
+          "label": "Open legend at start"
+        }
+      ]
     }]
   }],
   "values": {
@@ -258,6 +288,8 @@
     "basemapToggle": false,
     "zoom": true,
     "legend": false,
+    "legendOpenAtStart": false,
+    "legendPosition": "top-right",
     "scalebar": false,
     "hideLookupLayers": false,
     "addMarker": true,

@@ -36,6 +36,7 @@
     "units",
     "scale",
     "relationship",
+    "displayUnmatchedResults",
     "oauthappid",
     "portalUrl",
     "viewpoint",
@@ -49,6 +50,9 @@
     "maxDistance",
     "includeDistance",
     "showDirections",
+    "interactiveResults",
+    "legend",
+    "legendOpenAtStart",
     "noMap"
   ],
   "webMap": {
