@@ -19,19 +19,42 @@
 
   limitations under the License.​
 */
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -65,16 +88,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/geometry/Extent", "esri/geometry/Point"], function (require, exports, Camera_1, promiseUtils_1, Extent_1, Point_1) {
+define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/geometry/Extent", "esri/geometry/Point", "esri/core/promiseUtils"], function (require, exports, Camera_1, promiseUtils_1, Extent_1, Point_1, promiseUtils_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.parseMarker = exports.parseExtent = exports.parseLevel = exports.parseCenter = exports.parseViewpoint = exports.parseViewComponents = void 0;
     Camera_1 = __importDefault(Camera_1);
     Extent_1 = __importDefault(Extent_1);
     Point_1 = __importDefault(Point_1);
@@ -171,7 +188,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/geo
     exports.parseExtent = parseExtent;
     function parseMarker(marker) {
         return __awaiter(this, void 0, void 0, function () {
-            var markerArray, markerLength, _a, Graphic, PopupTemplate, PictureMarkerSymbol, SimpleMarkerSymbol, x, y, content, icon_url, label, wkid, markerSymbol, point, hasPopupDetails, popupTemplate, graphic;
+            var markerArray, markerLength, modules, _a, Graphic, PopupTemplate, PictureMarkerSymbol, SimpleMarkerSymbol, x, y, content, icon_url, label, wkid, markerSymbol, point, hasPopupDetails, popupTemplate, graphic;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -190,14 +207,10 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/geo
                         if (markerLength < 2) {
                             return [2 /*return*/, promiseUtils_1.reject()];
                         }
-                        return [4 /*yield*/, Promise.all([
-                                new Promise(function (resolve_1, reject_1) { require(["esri/Graphic"], resolve_1, reject_1); }).then(__importStar),
-                                new Promise(function (resolve_2, reject_2) { require(["esri/PopupTemplate"], resolve_2, reject_2); }).then(__importStar),
-                                new Promise(function (resolve_3, reject_3) { require(["esri/symbols/PictureMarkerSymbol"], resolve_3, reject_3); }).then(__importStar),
-                                new Promise(function (resolve_4, reject_4) { require(["esri/symbols/SimpleMarkerSymbol"], resolve_4, reject_4); }).then(__importStar)
-                            ])];
+                        return [4 /*yield*/, promiseUtils_2.eachAlways([new Promise(function (resolve_1, reject_1) { require(["esri/Graphic"], resolve_1, reject_1); }).then(__importStar), new Promise(function (resolve_2, reject_2) { require(["esri/PopupTemplate"], resolve_2, reject_2); }).then(__importStar), new Promise(function (resolve_3, reject_3) { require(["esri/symbols/PictureMarkerSymbol"], resolve_3, reject_3); }).then(__importStar), new Promise(function (resolve_4, reject_4) { require(["esri/symbols/SimpleMarkerSymbol"], resolve_4, reject_4); }).then(__importStar)])];
                     case 1:
-                        _a = _b.sent(), Graphic = _a[0], PopupTemplate = _a[1], PictureMarkerSymbol = _a[2], SimpleMarkerSymbol = _a[3];
+                        modules = _b.sent();
+                        _a = modules.map(function (module) { return module.value; }), Graphic = _a[0], PopupTemplate = _a[1], PictureMarkerSymbol = _a[2], SimpleMarkerSymbol = _a[3];
                         x = parseFloat(markerArray[0]);
                         y = parseFloat(markerArray[1]);
                         content = markerArray[3];

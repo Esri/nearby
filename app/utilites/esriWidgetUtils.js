@@ -1,3 +1,22 @@
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,84 +53,130 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "esri/core/watchUtils", "esri/core/promiseUtils", "esri/core/Handles"], function (require, exports, watchUtils_1, promiseUtils_1, Handles_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.addScaleBar = exports.addLegend = exports.addHome = exports.addBasemap = exports.addZoom = exports.addMapComponents = void 0;
+    Handles_1 = __importDefault(Handles_1);
     function addMapComponents(props) {
         return __awaiter(this, void 0, void 0, function () {
-            var config, view;
+            var config;
             return __generator(this, function (_a) {
-                config = props.config, view = props.view;
-                if (config.zoom && config.zoomPosition !== 'top-left') {
-                    view.ui.move('zoom', config.zoomPosition);
+                config = props.config;
+                this._handles = new Handles_1.default();
+                this._handles.add([watchUtils_1.init(config, ["home", "homePosition"], function (newValue, oldValue, propertyName) {
+                        props.propertyName = propertyName;
+                        addHome(props);
+                    }),
+                    watchUtils_1.init(config, ["mapZoom", "mapZoomPosition"], function (newValue, oldValue, propertyName) {
+                        props.propertyName = propertyName;
+                        addZoom(props);
+                    }),
+                    watchUtils_1.init(config, ["legend", "legendPosition", "legendOpenAtStart"], function (newValue, oldValue, propertyName) {
+                        props.propertyName = propertyName;
+                        addLegend(props);
+                    }),
+                    watchUtils_1.init(config, ["scalebar", "scalebarPosition"], function (newValue, oldValue, propertyName) {
+                        props.propertyName = propertyName;
+                        addScaleBar(props);
+                    }),
+                    watchUtils_1.init(config, ["nextBasemap", "basemapTogglePosition", "basemapToggle"], function (newValue, oldValue, propertyName) {
+                        props.propertyName = propertyName;
+                        addBasemap(props);
+                    })], "configuration");
+                if (!config.withinConfigurationExperience) {
+                    this._handles.remove("configuration");
                 }
-                if (config.home)
-                    addHome(props);
-                if (config.legend)
-                    addLegend(props);
-                if (config.scalebar)
-                    addScaleBar(props);
-                if (config.basemapToggle)
-                    addBasemap(props);
                 return [2 /*return*/];
             });
         });
     }
     exports.addMapComponents = addMapComponents;
-    function moveComponent(props) {
-        var mainNodes = document.getElementsByClassName(props.className);
-        var node = null;
-        for (var j = 0; j < mainNodes.length; j++) {
-            node = mainNodes[j];
-        }
-        if (node) {
-            var direction = props.mobile ? 'manual' : props.config.legendPosition;
-            props.mobile ? node.classList.add('mobile') : node.classList.remove('mobile');
-            props.view.ui.move(node, direction);
-        }
+    function addZoom(props) {
+        return __awaiter(this, void 0, void 0, function () {
+            var view, config, propertyName, mapZoom, mapZoomPosition, Zoom, node;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        view = props.view, config = props.config, propertyName = props.propertyName;
+                        mapZoom = config.mapZoom, mapZoomPosition = config.mapZoomPosition;
+                        return [4 /*yield*/, new Promise(function (resolve_1, reject_1) { require(["esri/widgets/Zoom"], resolve_1, reject_1); }).then(__importStar)];
+                    case 1:
+                        Zoom = _a.sent();
+                        node = _findNode("esri-zoom");
+                        if (!mapZoom) {
+                            if (node)
+                                view.ui.remove(node);
+                            return [2 /*return*/];
+                        }
+                        if (node && !mapZoom)
+                            view.ui.remove(node);
+                        if (propertyName === "mapZoomPosition" && node) {
+                            view.ui.move(node, mapZoomPosition);
+                        }
+                        else if (propertyName === "mapZoom" && !node) {
+                            view.ui.add(new Zoom.default({ view: view }), mapZoomPosition);
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
     }
-    exports.moveComponent = moveComponent;
+    exports.addZoom = addZoom;
     function addBasemap(props) {
         return __awaiter(this, void 0, void 0, function () {
-            var view, config, BasemapToggle, bmToggle, _a;
+            var view, config, propertyName, nextBasemap, basemapTogglePosition, basemapToggle, BasemapToggle, node, bmToggle, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        view = props.view, config = props.config;
-                        return [4 /*yield*/, new Promise(function (resolve_1, reject_1) { require(['esri/widgets/BasemapToggle'], resolve_1, reject_1); }).then(__importStar)];
+                        view = props.view, config = props.config, propertyName = props.propertyName;
+                        nextBasemap = config.nextBasemap, basemapTogglePosition = config.basemapTogglePosition, basemapToggle = config.basemapToggle;
+                        return [4 /*yield*/, new Promise(function (resolve_2, reject_2) { require(["esri/widgets/BasemapToggle"], resolve_2, reject_2); }).then(__importStar)];
                     case 1:
                         BasemapToggle = _b.sent();
-                        if (!BasemapToggle) return [3 /*break*/, 4];
+                        if (!BasemapToggle)
+                            return [2 /*return*/];
+                        node = _findNode("esri-basemap-toggle");
+                        // If basemapToggle isn't enabled remove the widget if it exists and exit 
+                        if (!basemapToggle) {
+                            if (node)
+                                view.ui.remove(node);
+                            return [2 /*return*/];
+                        }
+                        // Move the basemap toggle widget if it exists 
+                        if (propertyName === "basemapTogglePosition" && node) {
+                            view.ui.move(node, basemapTogglePosition);
+                        }
+                        if (!(propertyName === "basemapToggle" || (propertyName === "nextBasemap" && node))) return [3 /*break*/, 4];
+                        if (node)
+                            view.ui.remove(node);
                         bmToggle = new BasemapToggle.default({
                             view: view
                         });
-                        if (!config.altBasemap) return [3 /*break*/, 3];
+                        if (!nextBasemap) return [3 /*break*/, 3];
                         _a = bmToggle;
-                        return [4 /*yield*/, _getBasemap(config.altBasemap)];
+                        return [4 /*yield*/, _getBasemap(nextBasemap)];
                     case 2:
                         _a.nextBasemap = (_b.sent());
                         _b.label = 3;
                     case 3:
-                        view.ui.add(bmToggle, config.basemapTogglePosition);
+                        view.ui.add(bmToggle, basemapTogglePosition);
                         _b.label = 4;
                     case 4: return [2 /*return*/];
                 }
             });
         });
     }
+    exports.addBasemap = addBasemap;
     function _getBasemap(id) {
         return __awaiter(this, void 0, void 0, function () {
             var Basemap, basemap;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, new Promise(function (resolve_2, reject_2) { require(["esri/Basemap"], resolve_2, reject_2); }).then(__importStar)];
+                    case 0: return [4 /*yield*/, new Promise(function (resolve_3, reject_3) { require(["esri/Basemap"], resolve_3, reject_3); }).then(__importStar)];
                     case 1:
                         Basemap = _a.sent();
                         if (!Basemap) {
@@ -132,19 +197,30 @@ define(["require", "exports"], function (require, exports) {
             });
         });
     }
-    exports._getBasemap = _getBasemap;
     function addHome(props) {
         return __awaiter(this, void 0, void 0, function () {
-            var view, config, Home;
+            var view, config, propertyName, home, homePosition, Home, node;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        view = props.view, config = props.config;
-                        return [4 /*yield*/, new Promise(function (resolve_3, reject_3) { require(['esri/widgets/Home'], resolve_3, reject_3); }).then(__importStar)];
+                        view = props.view, config = props.config, propertyName = props.propertyName;
+                        home = config.home, homePosition = config.homePosition;
+                        return [4 /*yield*/, new Promise(function (resolve_4, reject_4) { require(['esri/widgets/Home'], resolve_4, reject_4); }).then(__importStar)];
                     case 1:
                         Home = _a.sent();
-                        if (Home) {
-                            view.ui.add(new Home.default({ view: view }), config.homePosition);
+                        node = _findNode("esri-home");
+                        if (!home) {
+                            if (node)
+                                view.ui.remove(node);
+                            return [2 /*return*/];
+                        }
+                        if (node && !home)
+                            view.ui.remove(node);
+                        if (propertyName === "homePosition" && node) {
+                            view.ui.move(node, homePosition);
+                        }
+                        else if (propertyName === "home") {
+                            view.ui.add(new Home.default({ view: view }), homePosition);
                         }
                         return [2 /*return*/];
                 }
@@ -154,30 +230,44 @@ define(["require", "exports"], function (require, exports) {
     exports.addHome = addHome;
     function addLegend(props) {
         return __awaiter(this, void 0, void 0, function () {
-            var view, config, _a, Legend, Expand, legend, expand, container;
+            var view, config, propertyName, legend, legendPosition, legendOpenAtStart, modules, _a, Legend, Expand, node, content, legendExpand;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        view = props.view, config = props.config;
-                        return [4 /*yield*/, Promise.all([new Promise(function (resolve_4, reject_4) { require(['esri/widgets/Legend'], resolve_4, reject_4); }).then(__importStar), new Promise(function (resolve_5, reject_5) { require(['esri/widgets/Expand'], resolve_5, reject_5); }).then(__importStar)])];
+                        view = props.view, config = props.config, propertyName = props.propertyName;
+                        legend = config.legend, legendPosition = config.legendPosition, legendOpenAtStart = config.legendOpenAtStart;
+                        return [4 /*yield*/, promiseUtils_1.eachAlways([new Promise(function (resolve_5, reject_5) { require(["esri/widgets/Legend"], resolve_5, reject_5); }).then(__importStar), new Promise(function (resolve_6, reject_6) { require(["esri/widgets/Expand"], resolve_6, reject_6); }).then(__importStar)])];
                     case 1:
-                        _a = _b.sent(), Legend = _a[0], Expand = _a[1];
-                        if (Legend && Expand) {
-                            legend = new Legend.default({
+                        modules = _b.sent();
+                        _a = modules.map(function (module) { return module.value; }), Legend = _a[0], Expand = _a[1];
+                        node = view.ui.find("legendExpand");
+                        if (!legend) {
+                            if (node)
+                                view.ui.remove(node);
+                            return [2 /*return*/];
+                        }
+                        // move the node if it exists 
+                        if (propertyName === "legendPosition" && node) {
+                            view.ui.move(node, legendPosition);
+                        }
+                        else if (propertyName === "legend") {
+                            content = new Legend.default({
+                                style: {
+                                    type: 'card'
+                                },
                                 view: view
                             });
-                            expand = new Expand.default({
-                                view: view,
-                                group: config.legendPosition,
-                                mode: 'floating',
-                                content: legend
+                            legendExpand = new Expand.default({
+                                id: "legendExpand",
+                                content: content,
+                                mode: "floating",
+                                group: legendPosition,
+                                view: view
                             });
-                            if (config.legendOpenAtStart) {
-                                expand.expand();
-                            }
-                            view.ui.add(expand, config.legendPosition);
-                            container = expand.container;
-                            container.classList.add('legend-expand');
+                            view.ui.add(legendExpand, legendPosition);
+                        }
+                        else if (propertyName === "legendOpenAtStart" && node) {
+                            node.expanded = legendOpenAtStart;
                         }
                         return [2 /*return*/];
                 }
@@ -187,20 +277,30 @@ define(["require", "exports"], function (require, exports) {
     exports.addLegend = addLegend;
     function addScaleBar(props) {
         return __awaiter(this, void 0, void 0, function () {
-            var view, portal, config, ScaleBar, scalebar;
+            var view, portal, config, propertyName, scalebar, scalebarPosition, ScaleBar, node;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        view = props.view, portal = props.portal, config = props.config;
-                        return [4 /*yield*/, new Promise(function (resolve_6, reject_6) { require(['esri/widgets/ScaleBar'], resolve_6, reject_6); }).then(__importStar)];
+                        view = props.view, portal = props.portal, config = props.config, propertyName = props.propertyName;
+                        scalebar = config.scalebar, scalebarPosition = config.scalebarPosition;
+                        return [4 /*yield*/, new Promise(function (resolve_7, reject_7) { require(["esri/widgets/ScaleBar"], resolve_7, reject_7); }).then(__importStar)];
                     case 1:
                         ScaleBar = _a.sent();
-                        if (ScaleBar) {
-                            scalebar = new ScaleBar.default({
+                        node = _findNode("esri-scale-bar");
+                        if (!scalebar) {
+                            if (node)
+                                view.ui.remove(node);
+                            return [2 /*return*/];
+                        }
+                        // move the node if it exists 
+                        if (propertyName === "scalebarPosition" && node) {
+                            view.ui.move(node, scalebarPosition);
+                        }
+                        else if (propertyName === "scalebar") {
+                            view.ui.add(new ScaleBar.default({
                                 view: view,
-                                unit: portal.units === 'metric' ? portal.units : 'non-metric'
-                            });
-                            view.ui.add(scalebar, config.scalebarPosition);
+                                unit: (portal === null || portal === void 0 ? void 0 : portal.units) === "metric" ? portal === null || portal === void 0 ? void 0 : portal.units : "non-metric"
+                            }), scalebarPosition);
                         }
                         return [2 /*return*/];
                 }
@@ -208,5 +308,13 @@ define(["require", "exports"], function (require, exports) {
         });
     }
     exports.addScaleBar = addScaleBar;
+    function _findNode(className) {
+        var mainNodes = document.getElementsByClassName(className);
+        var node = null;
+        for (var j = 0; j < mainNodes.length; j++) {
+            node = mainNodes[j];
+        }
+        return node ? node : null;
+    }
 });
 //# sourceMappingURL=esriWidgetUtils.js.map

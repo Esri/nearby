@@ -20,20 +20,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/Handles", "dojo/i18n!../nls/resources", "esri/widgets/support/widget", "esri/widgets/Slider"], function (require, exports, __extends, __decorate, decorators_1, Widget_1, Handles_1, i18n, widget_1, Slider_1) {
+define(["require", "exports", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/Handles", "dojo/i18n!../nls/resources", "esri/widgets/support/widget", "esri/intl", "esri/widgets/Slider"], function (require, exports, decorators_1, Widget_1, Handles_1, i18n, widget_1, intl_1, Slider_1) {
     "use strict";
     Widget_1 = __importDefault(Widget_1);
     Handles_1 = __importDefault(Handles_1);
     Slider_1 = __importDefault(Slider_1);
     var CSS = {
-        panel: 'panel',
-        panelNoBorder: 'panel-no-border',
-        refinePanel: 'panel-refine-results',
-        filterButton: 'filter-button',
-        filterIcon: 'icon-ui-filter',
-        buttonLink: 'btn-link',
-        button: 'btn',
-        hide: 'hide'
+        panel: "panel",
+        panelNoBorder: "panel-no-border",
+        refinePanel: "panel-refine-results",
+        filterButton: "filter-button",
+        filterIcon: "icon-ui-filter",
+        buttonLink: "btn-link",
+        button: "btn",
+        hide: "hide"
     };
     var RefineResults = /** @class */ (function (_super) {
         __extends(RefineResults, _super);
@@ -43,7 +43,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         //
         //--------------------------------------------------------------------------
         function RefineResults(props) {
-            var _this = _super.call(this) || this;
+            var _this = _super.call(this, props) || this;
             //--------------------------------------------------------------------------
             //
             // Variables
@@ -54,41 +54,36 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             return _this;
         }
         RefineResults.prototype.render = function () {
-            var config = this.base.config;
-            var filterButton = config.filters ? widget_1.tsx("button", { bind: this, onclick: this.showFilters, class: this.classes(CSS.filterButton, CSS.filterIcon, CSS.button, CSS.buttonLink), title: i18n.tools.filter }) : null;
-            var filterPanel = config.filters ? widget_1.tsx("div", { bind: this, afterCreate: this._storeNode, class: this.classes(CSS.hide, CSS.panel, CSS.panelNoBorder) }, "TODO: Filter will go here") : null;
-            var filterClass = config.filters ? "filters" : "no-filter";
             return (widget_1.tsx("div", null,
-                widget_1.tsx("div", { class: this.classes(CSS.panel, CSS.refinePanel, CSS.panelNoBorder, filterClass) },
-                    filterButton,
-                    widget_1.tsx("div", { bind: this, afterCreate: this._createSlider })),
-                filterPanel));
+                widget_1.tsx("div", { class: this.classes(CSS.panel, CSS.refinePanel, CSS.panelNoBorder) },
+                    widget_1.tsx("div", { bind: this, afterCreate: this._createSlider }))));
         };
         RefineResults.prototype._createSlider = function (node) {
             var _this = this;
-            var _a = this.base.config, distance = _a.distance, units = _a.units, minDistance = _a.minDistance, maxDistance = _a.maxDistance, precision = _a.precision, labelInputsEnabled = _a.labelInputsEnabled, rangeLabelInputsEnabled = _a.rangeLabelInputsEnabled;
+            var _a = this.config, searchUnits = _a.searchUnits, sliderRange = _a.sliderRange, precision = _a.precision, inputsEnabled = _a.inputsEnabled;
+            var minimum = sliderRange.minimum, maximum = sliderRange.maximum;
             var distanceSlider = new Slider_1.default({
-                min: minDistance,
-                max: maxDistance,
-                values: [distance],
-                precision: precision,
+                min: minimum,
+                max: maximum,
+                values: [sliderRange.default],
+                precision: parseInt(precision),
                 visibleElements: {
                     labels: true,
                     rangeLabels: true
                 },
-                labelInputsEnabled: labelInputsEnabled,
-                rangeLabelInputsEnabled: rangeLabelInputsEnabled,
+                labelInputsEnabled: inputsEnabled,
+                rangeLabelInputsEnabled: inputsEnabled,
                 snapOnClickEnabled: true,
                 container: node
             });
             this.slider = distanceSlider;
-            var convertedUnits = i18n.units[units];
-            convertedUnits = convertedUnits ? convertedUnits.abbr : "mi";
-            var locale = this.base.locale;
-            locale = locale || "en";
-            // Append units to range labels
-            distanceSlider.labelFormatFunction = function (value, type) {
-                if (type === "min" || type === "max") {
+            var locale = intl_1.getLocale();
+            // Append units to range labels   
+            this.slider.labelFormatFunction = function (value, type) {
+                var convertedUnits = i18n.units[searchUnits];
+                convertedUnits = convertedUnits ? convertedUnits.abbr : "mi";
+                //type can be min, max, value 
+                if (type == "value") {
                     return value.toLocaleString(locale) + " " + convertedUnits;
                 }
                 else {
@@ -101,6 +96,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             };
             this._handles.remove(["slider,adjust"]);
             this._handles.add(distanceSlider.watch("values", function (value) {
+                // this.config.distance = value;
                 if (distanceSlider.state === "ready") {
                     _this.value = value[0];
                 }
@@ -113,9 +109,6 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             this._adjustLabels();
             this._handles.add(distanceSlider.watch(["max", "min"], function () { return _this._adjustLabels; }), "adjust");
             return distanceSlider;
-        };
-        RefineResults.prototype.showFilters = function () {
-            this._filterPanelNode && this._filterPanelNode.classList.toggle(CSS.hide);
         };
         RefineResults.prototype.destroy = function () {
             this._handles.removeAll();
@@ -131,19 +124,57 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 var container = this.slider.container;
                 var maxInput = container.querySelector(".esri-slider__max");
                 var minInput = container.querySelector(".esri-slider__min");
-                if (min && min.toString().length > 4 || max && max.toString().length > 4) {
-                    minInput.classList.add("bottom-label");
-                    maxInput.classList.add("bottom-label");
+                if ((min === null || min === void 0 ? void 0 : min.toString().length) > 4 || max && max.toString().length > 4) {
+                    minInput === null || minInput === void 0 ? void 0 : minInput.classList.add("bottom-label");
+                    maxInput === null || maxInput === void 0 ? void 0 : maxInput.classList.add("bottom-label");
                 }
                 else {
-                    minInput.classList.remove("bottom-label");
-                    maxInput.classList.remove("bottom-label");
+                    minInput === null || minInput === void 0 ? void 0 : minInput.classList.remove("bottom-label");
+                    maxInput === null || maxInput === void 0 ? void 0 : maxInput.classList.remove("bottom-label");
+                }
+            }
+        };
+        RefineResults.prototype.updateSliderProps = function (propertyName, value) {
+            var _a, _b;
+            if (this.slider) {
+                if (propertyName === "sliderRange") {
+                    if ((value === null || value === void 0 ? void 0 : value.default) !== this.slider.values[0]) {
+                        this.slider.values = [this.config.sliderRange.default];
+                    }
+                }
+                if (propertyName === "sliderRange" && (value === null || value === void 0 ? void 0 : value.maximum) !== this.slider.max) {
+                    this.slider.max = (_a = this.config.sliderRange) === null || _a === void 0 ? void 0 : _a.maximum;
+                }
+                if (propertyName === "minDistance" && (value === null || value === void 0 ? void 0 : value.minimum) !== this.slider.min) {
+                    this.slider.min = (_b = this.config.sliderRange) === null || _b === void 0 ? void 0 : _b.minimum;
+                }
+                if (propertyName === "inputsEnabled") {
+                    this.slider.labelInputsEnabled = this.config.inputsEnabled;
+                    this.slider.rangeLabelInputsEnabled = this.config.inputsEnabled;
+                }
+                if (propertyName === "searchUnits") {
+                    // update labels 
+                    var locale_1 = intl_1.getLocale();
+                    var searchUnits_1 = this.config.searchUnits;
+                    if (this.slider) {
+                        // Append units to range labels   
+                        this.slider.labelFormatFunction = function (value, type) {
+                            var convertedUnits = i18n.units[searchUnits_1];
+                            convertedUnits = convertedUnits ? convertedUnits.abbr : "mi";
+                            if (type === "value") {
+                                return value.toLocaleString(locale_1) + " " + convertedUnits;
+                            }
+                            else {
+                                return value.toLocaleString(locale_1);
+                            }
+                        };
+                    }
                 }
             }
         };
         __decorate([
             decorators_1.property()
-        ], RefineResults.prototype, "base", void 0);
+        ], RefineResults.prototype, "config", void 0);
         __decorate([
             decorators_1.property()
         ], RefineResults.prototype, "slider", void 0);
@@ -151,10 +182,10 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.property()
         ], RefineResults.prototype, "value", void 0);
         RefineResults = __decorate([
-            decorators_1.subclass('app.RefineResults')
+            decorators_1.subclass("app.RefineResults")
         ], RefineResults);
         return RefineResults;
-    }(decorators_1.declared(Widget_1.default)));
+    }((Widget_1.default)));
     return RefineResults;
 });
 //# sourceMappingURL=RefineResults.js.map

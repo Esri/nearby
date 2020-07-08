@@ -20,7 +20,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/widgets/support/widget", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "calcite-web/dist/js/calcite-web", "dojo/i18n!../nls/resources"], function (require, exports, __extends, __decorate, widget_1, decorators_1, Widget_1, calcite_web_1, i18n) {
+define(["require", "exports", "esri/widgets/support/widget", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "calcite-web/dist/js/calcite-web", "dojo/i18n!../nls/resources"], function (require, exports, widget_1, decorators_1, Widget_1, calcite_web_1, i18n) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     Widget_1 = __importDefault(Widget_1);
@@ -48,7 +48,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
     var Accordion = /** @class */ (function (_super) {
         __extends(Accordion, _super);
         function Accordion(params, parentNode) {
-            var _this = _super.call(this) || this;
+            var _this = _super.call(this, params) || this;
             // Variables 
             _this._calciteLoaded = false;
             // Properties 
@@ -74,9 +74,10 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 if (content.length > 0 && content[0] && content[0].type === "fields") {
                     var fieldType_1;
                     var empty = content.every(function (c) {
+                        var _a;
                         if (c.type === "fields") {
                             fieldType_1 = c;
-                            return fieldType_1.fieldInfos.length === 0 ? true : false;
+                            return ((_a = fieldType_1 === null || fieldType_1 === void 0 ? void 0 : fieldType_1.fieldInfos) === null || _a === void 0 ? void 0 : _a.length) === 0 ? true : false;
                         }
                         else if (c.type === "attachments") {
                             fieldType_1 = c;
@@ -129,7 +130,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.subclass('esri.widgets.Accordion')
         ], Accordion);
         return Accordion;
-    }(decorators_1.declared(Widget_1.default)));
+    }((Widget_1.default)));
     exports.default = Accordion;
 });
 //# sourceMappingURL=Accordion.js.map

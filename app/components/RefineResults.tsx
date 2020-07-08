@@ -1,39 +1,40 @@
-/// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
-/// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-import { subclass, declared, property } from 'esri/core/accessorSupport/decorators';
-import Widget from 'esri/widgets/Widget';
-import Accessor from 'esri/core/Accessor';
-import Handles from 'esri/core/Handles';
-import i18n = require('dojo/i18n!../nls/resources');
-import { tsx } from 'esri/widgets/support/widget';
-import Slider from 'esri/widgets/Slider';
+
+import { subclass, property } from "esri/core/accessorSupport/decorators";
+import Widget from "esri/widgets/Widget";
+import Handles from "esri/core/Handles";
+import i18n = require("dojo/i18n!../nls/resources");
+import { tsx } from "esri/widgets/support/widget";
+import { getLocale } from "esri/intl";
+import Slider from "esri/widgets/Slider";
 import esri = __esri;
-import ApplicationBase from 'ApplicationBase/ApplicationBase';
+
+import ConfigurationSettings = require("../ConfigurationSettings");
+
 
 const CSS = {
-    panel: 'panel',
-    panelNoBorder: 'panel-no-border',
-    refinePanel: 'panel-refine-results',
-    filterButton: 'filter-button',
-    filterIcon: 'icon-ui-filter',
-    buttonLink: 'btn-link',
-    button: 'btn',
-    hide: 'hide'
+    panel: "panel",
+    panelNoBorder: "panel-no-border",
+    refinePanel: "panel-refine-results",
+    filterButton: "filter-button",
+    filterIcon: "icon-ui-filter",
+    buttonLink: "btn-link",
+    button: "btn",
+    hide: "hide"
 };
 
 interface RefineResultsProps extends esri.WidgetProperties {
-    base: ApplicationBase;
+    config: ConfigurationSettings;
 }
 
-@subclass('app.RefineResults')
-class RefineResults extends declared(Widget) {
+@subclass("app.RefineResults")
+class RefineResults extends (Widget) {
     //--------------------------------------------------------------------------
     //
     //  Properties
     //
     //--------------------------------------------------------------------------
+    @property() config: ConfigurationSettings;
 
-    @property() base: ApplicationBase;
     @property() slider: Slider;
     @property() value: number;
     //--------------------------------------------------------------------------
@@ -50,61 +51,56 @@ class RefineResults extends declared(Widget) {
     //
     //--------------------------------------------------------------------------
     constructor(props: RefineResultsProps) {
-        super();
+        super(props);
     }
     render() {
-        const { config } = this.base;
-        const filterButton = config.filters ? <button bind={this} onclick={this.showFilters} class={this.classes(CSS.filterButton, CSS.filterIcon, CSS.button, CSS.buttonLink)} title={i18n.tools.filter}></button> : null;
-        const filterPanel = config.filters ? <div bind={this} afterCreate={this._storeNode} class={this.classes(CSS.hide, CSS.panel, CSS.panelNoBorder)}>TODO: Filter will go here</div> : null;
-        const filterClass = config.filters ? "filters" : "no-filter";
         return (
             <div>
-                <div class={this.classes(CSS.panel, CSS.refinePanel, CSS.panelNoBorder, filterClass)}>
-                    {filterButton}
+                <div class={this.classes(CSS.panel, CSS.refinePanel, CSS.panelNoBorder)}>
                     <div bind={this} afterCreate={this._createSlider} />
                 </div>
-                {filterPanel}
             </div>
-        )
+        );
     }
     _createSlider(node: HTMLElement) {
-        const { distance, units, minDistance, maxDistance, precision, labelInputsEnabled, rangeLabelInputsEnabled } = this.base.config;
-
+        const { searchUnits, sliderRange, precision, inputsEnabled } = this.config;
+        const { minimum, maximum } = sliderRange;
         const distanceSlider = new Slider({
-            min: minDistance,
-            max: maxDistance,
-            values: [distance],
-            precision,
+            min: minimum,
+            max: maximum,
+            values: [sliderRange.default],
+            precision: parseInt(precision),
             visibleElements: {
                 labels: true,
                 rangeLabels: true
             },
-            labelInputsEnabled,
-            rangeLabelInputsEnabled,
+            labelInputsEnabled: inputsEnabled,
+            rangeLabelInputsEnabled: inputsEnabled,
             snapOnClickEnabled: true,
             container: node
         });
         this.slider = distanceSlider;
-        let convertedUnits = i18n.units[units];
-        convertedUnits = convertedUnits ? convertedUnits.abbr : "mi";
 
-        let { locale } = this.base;
-        locale = locale || "en";
-        // Append units to range labels
-        distanceSlider.labelFormatFunction = (value: number, type: string) => {
-            if (type === "min" || type === "max") {
+        const locale = getLocale();
+        // Append units to range labels   
+        this.slider.labelFormatFunction = (value: number, type: string) => {
+            let convertedUnits = i18n.units[searchUnits];
+            convertedUnits = convertedUnits ? convertedUnits.abbr : "mi";
+            //type can be min, max, value 
+            if (type == "value") {
                 return `${value.toLocaleString(locale)} ${convertedUnits}`;
             } else {
                 return value.toLocaleString(locale);
             }
-        }
+        };
         // Take locale into account
         distanceSlider.inputFormatFunction = (value) => {
             return value.toLocaleString(locale);
-        }
+        };
 
         this._handles.remove(["slider,adjust"]);
         this._handles.add(distanceSlider.watch("values", (value) => {
+            // this.config.distance = value;
             if (distanceSlider.state === "ready") {
                 this.value = value[0];
             }
@@ -114,13 +110,10 @@ class RefineResults extends declared(Widget) {
                 this.value = e.value;
             }
         });
-        this._adjustLabels()
+        this._adjustLabels();
         this._handles.add(distanceSlider.watch(["max", "min"], () => this._adjustLabels), "adjust");
 
         return distanceSlider;
-    }
-    showFilters() {
-        this._filterPanelNode && this._filterPanelNode.classList.toggle(CSS.hide);
     }
     destroy() {
         this._handles.removeAll();
@@ -128,6 +121,7 @@ class RefineResults extends declared(Widget) {
     _storeNode(node: HTMLElement) {
         this._filterPanelNode = node;
     }
+
     _adjustLabels() {
         // Move label down so it doesn't look so smushed 
         // when we have more than 4 numbers
@@ -138,13 +132,55 @@ class RefineResults extends declared(Widget) {
             const maxInput = container.querySelector(".esri-slider__max");
             const minInput = container.querySelector(".esri-slider__min");
 
-            if (min && min.toString().length > 4 || max && max.toString().length > 4) {
-                minInput.classList.add("bottom-label");
-                maxInput.classList.add("bottom-label");
+            if (min?.toString().length > 4 || max && max.toString().length > 4) {
+                minInput?.classList.add("bottom-label");
+                maxInput?.classList.add("bottom-label");
             } else {
-                minInput.classList.remove("bottom-label");
-                maxInput.classList.remove("bottom-label");
+                minInput?.classList.remove("bottom-label");
+                maxInput?.classList.remove("bottom-label");
             }
+        }
+
+    }
+    public updateSliderProps(propertyName: string, value: any) {
+
+        if (this.slider) {
+
+            if (propertyName === "sliderRange") {
+                if (value?.default !== this.slider.values[0]) {
+                    this.slider.values = [this.config.sliderRange.default];
+                }
+            }
+
+            if (propertyName === "sliderRange" && value?.maximum !== this.slider.max) {
+                this.slider.max = this.config.sliderRange?.maximum;
+            }
+            if (propertyName === "minDistance" && value?.minimum !== this.slider.min) {
+                this.slider.min = this.config.sliderRange?.minimum;
+            }
+            if (propertyName === "inputsEnabled") {
+                this.slider.labelInputsEnabled = this.config.inputsEnabled;
+                this.slider.rangeLabelInputsEnabled = this.config.inputsEnabled;
+            }
+            if (propertyName === "searchUnits") {
+                // update labels 
+                const locale = getLocale();
+                const { searchUnits } = this.config;
+                if (this.slider) {
+                    // Append units to range labels   
+                    this.slider.labelFormatFunction = (value: number, type: string) => {
+                        let convertedUnits = i18n.units[searchUnits];
+                        convertedUnits = convertedUnits ? convertedUnits.abbr : "mi";
+
+                        if (type === "value") {
+                            return `${value.toLocaleString(locale)} ${convertedUnits}`;
+                        } else {
+                            return value.toLocaleString(locale);
+                        }
+                    };
+                }
+            }
+
         }
 
     }

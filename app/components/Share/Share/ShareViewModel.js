@@ -1,5 +1,3 @@
-/// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
-/// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -55,7 +53,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/Accessor", "esri/core/Collection", "esri/core/accessorSupport/decorators", "esri/geometry/Point", "esri/request", "./ShareItem", "./ShareFeatures", "esri/geometry/projection", "esri/geometry/SpatialReference"], function (require, exports, __extends, __decorate, Accessor, Collection, decorators_1, Point, esriRequest, ShareItem, ShareFeatures, projection, SpatialReference) {
+define(["require", "exports", "esri/core/Accessor", "esri/core/Collection", "esri/core/accessorSupport/decorators", "esri/geometry/Point", "esri/request", "./ShareItem", "./ShareFeatures", "esri/geometry/projection", "esri/geometry/SpatialReference"], function (require, exports, Accessor, Collection, decorators_1, Point, esriRequest, ShareItem, ShareFeatures, projection, SpatialReference) {
     "use strict";
     //----------------------------------
     //
@@ -175,7 +173,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                         ? "loading"
                         : "disabled";
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(ShareViewModel.prototype, "embedCode", {
@@ -187,7 +185,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             get: function () {
                 return "<iframe src=\"" + this.shareUrl + "\" width=\"600\" height=\"450\" frameborder=\"0\" style=\"border:0\" allowfullscreen></iframe>";
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         //----------------------------------
@@ -379,7 +377,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.subclass("ShareViewModel")
         ], ShareViewModel);
         return ShareViewModel;
-    }(decorators_1.declared(Accessor)));
+    }((Accessor)));
     return ShareViewModel;
 });
 //# sourceMappingURL=ShareViewModel.js.map

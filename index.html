@@ -19,8 +19,8 @@
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./serviceworker.js', {
-          scope: './sw-test/'
-        })
+        scope: './sw-test/'
+      })
         .then(function (reg) {
           // registration worked
           console.log('Registration succeeded. Scope is ' + reg.scope);
@@ -31,14 +31,13 @@
     }
 
   </script>
-  <!--Testing: https://www.filamentgroup.com/lab/load-css-simpler/-->
-  <link rel="stylesheet" href="https://js.arcgis.com/4.15/esri/css/main.css" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="styles/main.css" media="print" onload="this.media='all'">
+  <link id="esri-stylesheet" rel="stylesheet" href="https://js.arcgis.com/4.16/esri/themes/light/main.css" />
 
+  <link rel="stylesheet" href="styles/main.css" media="print" onload="this.media='all'">
   <script src="./app/es6-promise.auto.min.js"></script>
 
   <script src="./app/dojo.js"></script>
-  <script src="https://js.arcgis.com/4.15/"></script>
+  <script src="https://js.arcgis.com/4.16/"></script>
   <script>
     require(["Application/init"]);
 

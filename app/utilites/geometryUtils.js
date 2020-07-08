@@ -37,21 +37,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-define(["require", "exports", "esri/Graphic", "esri/Color", "esri/views/support/colorUtils", "esri/geometry/SpatialReference", "esri/geometry/geometryEngine", "esri/geometry"], function (require, exports, Graphic_1, Color_1, colorUtils, SpatialReference_1, geometryEngine_1, geometry_1) {
+define(["require", "exports", "esri/views/support/colorUtils", "esri/geometry/SpatialReference", "esri/geometry/geometryEngine", "esri/geometry"], function (require, exports, colorUtils_1, SpatialReference_1, geometryEngine_1, geometry_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    Graphic_1 = __importDefault(Graphic_1);
-    Color_1 = __importDefault(Color_1);
-    colorUtils = __importStar(colorUtils);
+    exports.bufferGeometry = exports.getBasemapTheme = exports.getDistances = void 0;
     SpatialReference_1 = __importDefault(SpatialReference_1);
-    geometryEngine_1 = __importDefault(geometryEngine_1);
     function getDistances(params) {
         return __awaiter(this, void 0, void 0, function () {
             var location, unit, locale, geodesic, sr, feature, sr2, type, srValid, sr2Valid;
@@ -60,7 +50,7 @@ define(["require", "exports", "esri/Graphic", "esri/Color", "esri/views/support/
                 locale = document.documentElement.lang || "en";
                 geodesic = false;
                 if (location && location.type && location.type === "point") {
-                    sr = (location && location.spatialReference) ? location.spatialReference : null;
+                    sr = (location === null || location === void 0 ? void 0 : location.spatialReference) ? location.spatialReference : null;
                     feature = params.features && params.features.length && params.features.length > 0 ? params.features[0] : null;
                     sr2 = feature.geometry && feature.geometry.spatialReference ? feature.geometry.spatialReference : null;
                     type = (feature.geometry && feature.geometry.type) ? feature.geometry.type : null;
@@ -73,7 +63,7 @@ define(["require", "exports", "esri/Graphic", "esri/Color", "esri/views/support/
                     }
                 }
                 params.features.forEach(function (feature) {
-                    var distance;
+                    var measureDistance;
                     if (geodesic) {
                         var pt1 = location;
                         var pt2 = feature.geometry;
@@ -81,13 +71,13 @@ define(["require", "exports", "esri/Graphic", "esri/Color", "esri/views/support/
                             paths: [[[pt1.x, pt1.y], [pt2.x, pt2.y]]],
                             spatialReference: pt1.spatialReference
                         });
-                        distance = geometryEngine_1.default.geodesicLength(polyLine, unit);
+                        measureDistance = geometryEngine_1.geodesicLength(polyLine, unit);
                     }
                     else {
-                        distance = geometryEngine_1.default.distance(location, feature.geometry, unit);
+                        measureDistance = geometryEngine_1.distance(location, feature.geometry, unit);
                     }
                     if (feature && feature.attributes) {
-                        feature.attributes.lookupDistance = distance !== null ? distance.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
+                        feature.attributes.lookupDistance = measureDistance !== null ? measureDistance.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
                     }
                 });
                 return [2 /*return*/];
@@ -99,7 +89,7 @@ define(["require", "exports", "esri/Graphic", "esri/Color", "esri/views/support/
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, colorUtils.getBackgroundColorTheme(view)];
+                    case 0: return [4 /*yield*/, colorUtils_1.getBackgroundColorTheme(view)];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
             });
@@ -113,35 +103,12 @@ define(["require", "exports", "esri/Graphic", "esri/Color", "esri/views/support/
                 wkid: 102100
             });
         if (spatialReference.isWGS84 || spatialReference.isWebMercator) {
-            return geometryEngine_1.default.geodesicBuffer(location, distance, unit);
+            return geometryEngine_1.geodesicBuffer(location, distance, unit);
         }
         else {
-            return geometryEngine_1.default.buffer(location, distance, unit);
+            return geometryEngine_1.buffer(location, distance, unit);
         }
     }
     exports.bufferGeometry = bufferGeometry;
-    function createBufferGraphic(geometry, theme, config) {
-        // determine theme and apply color based on that 
-        var lightColor = config.lightColor, darkColor = config.darkColor;
-        if (!theme)
-            theme = "light";
-        var hexVal = theme === "light" ? lightColor : darkColor;
-        var color = new Color_1.default(hexVal);
-        var fillColor = color.clone();
-        fillColor.a = 0.08;
-        var fillSymbol = {
-            type: 'simple-fill',
-            color: theme === "light" ? fillColor : null,
-            outline: {
-                color: color
-            }
-        };
-        var bufferGraphic = new Graphic_1.default({
-            geometry: geometry,
-            symbol: fillSymbol
-        });
-        return bufferGraphic;
-    }
-    exports.createBufferGraphic = createBufferGraphic;
 });
 //# sourceMappingURL=geometryUtils.js.map

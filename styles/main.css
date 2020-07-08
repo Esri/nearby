@@ -7609,6 +7609,11 @@ html[dir="rtl"] .top-nav-title {
 .panel.app-header {
   height: 50px; }
 
+.app-header,
+.panel {
+  background-color: #4a4a4a;
+  color: #fff; }
+
 .app-header .btn-link:hover {
   filter: opacity(80%); }
 
@@ -7641,6 +7646,10 @@ html[dir="rtl"] .top-nav-title {
 .search-suggest-menu,
 .esri-menu {
   z-index: 8; }
+
+.esri-search--show-suggestions .esri-search__suggestions-menu,
+.esri-search--sources .esri-search__sources-menu {
+  z-index: 100; }
 
 .esri-search__submit-button:hover {
   filter: opacity(80%); }
@@ -7680,10 +7689,15 @@ html[dir="rtl"] .top-nav-title {
 .esri-search__clear-button {
   height: 42px; }
 
-.panel-refine-results.no-filter {
-  padding-left: 6px;
-  padding-top: 30px;
-  padding-right: 6px; }
+.light .panel-refine-results {
+  background-color: #fff;
+  border-top: solid 1px #a9a9a9; }
+
+.panel-refine-results {
+  padding: 1.5rem .25rem 1.25rem .25rem; }
+
+.esri-slider__content {
+  z-index: 0; }
 
 .esri-slider.esri-widget {
   background: transparent; }
@@ -7709,7 +7723,7 @@ html[dir="rtl"] .top-nav-title {
   text-align: left; }
 
 .esri-slider--horizontal .esri-slider__label {
-  top: -38px; }
+  top: -30px; }
 
 .distance {
   padding-left: 0.25em;
@@ -7741,7 +7755,14 @@ html[dir="rtl"] .top-nav-title {
   align-items: flex-end; }
 
 .esri-slider--horizontal .esri-slider__label {
-  white-space: nowrap; }
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px; }
+
+.esri-slider--horizontal .esri-slider__max,
+.esri-slider--horizontal .esri-slider__min {
+  word-break: break-word; }
 
 .group-accordion-icon {
   float: right; }
@@ -7888,9 +7909,6 @@ li h4.esri-feature__title {
 
 .btn-footer {
   padding: 11.5px; }
-  .btn-footer.btn-green {
-    background-color: #7461a8;
-    border-color: #7461a8; }
   .btn-footer:hover {
     filter: brightness(120%); }
 
@@ -7934,14 +7952,11 @@ li h4.esri-feature__title {
 .mini-map-panel .esri-zoom .esri-widget--button {
   display: none; }
 
-/*Decrease margin between buttons and +/- to match zoom controls based on design doc*/
-.esri-ui-top-right .esri-component,
-.esri-ui-top-left .esri-component {
-  margin-bottom: 1px; }
-
 /* Side panel styles */
 .side-panel {
-  background: #fff; }
+  background: #fff;
+  height: 100vh;
+  overflow: hidden; }
 
 .no-map .side-panel {
   width: 100%;
@@ -7966,7 +7981,7 @@ li h4.esri-feature__title {
     left: -9999px; }
 
 .scrollable-content {
-  height: calc(100vh - 200px);
+  height: calc(100vh - 180px);
   overflow: auto; }
 
 /* Detail Panel styles includes collapse all / open all links*/
@@ -8049,7 +8064,7 @@ li h4.esri-feature__title {
     text-align: center;
     font-size: 1.2em;
     line-height: 1.2em;
-    color: #9081bc;
+    /*color: $calcite-purple;*/
     cursor: pointer;
     margin-right: 22px;
     margin-top: 16px; }
@@ -8249,3 +8264,128 @@ button.directions-button {
 .esri-view-width-xsmall .esri-ui-top-right .esri-expand--auto .esri-expand__container--expanded,
 .esri-view-width-xsmall .esri-ui-bottom-right .esri-expand--auto .esri-expand__container--expanded {
   top: 42px; }
+
+/*Make sure expand content is on top */
+.esri-ui-corner .esri-component .esri-expand__content {
+  z-index: 4; }
+
+.dark .side-panel {
+  background-color: #323232;
+  color: #fff; }
+
+.dark .panel {
+  background-color: #151515;
+  color: #fff; }
+
+.dark .app-header {
+  background-color: #323232; }
+
+.dark .esri-search__suggestions-menu {
+  background-color: #585656; }
+
+.dark .esri-search__input-container {
+  border-bottom: solid 1px #4a4a4a; }
+
+.dark .esri-search__form .esri-input[type="text"],
+.dark .esri-input[type="number"],
+.dark .esri-search__clear-button,
+.dark .esri-search__submit-button,
+.dark .esri-search__sources-button .esri-widget--button {
+  background-color: #151515; }
+
+.dark .esri-search__input::-moz-placeholder {
+  color: #fff;
+  opacity: 1; }
+
+.dark .esri-search__input:-ms-input-placeholder {
+  color: #fff; }
+
+.dark .esri-search__input::-webkit-input-placeholder {
+  color: #fff; }
+
+.dark .accordion {
+  background-color: #323232; }
+
+.dark .group-accordion-section.accordion-section,
+.dark .group-accordion-content li {
+  border: solid 1px #959595; }
+
+.dark .accordion-icon.group-accordion-icon,
+.dark .accordion-section > .accordion-title > .accordion-icon.group-accordion-icon > svg {
+  color: #fff; }
+
+.dark .group-accordion-section .accordion-title {
+  background-color: #2b2b2b;
+  color: #fff; }
+
+.dark .group-accordion-count {
+  background-color: #4a4a4a;
+  color: #fff; }
+
+.dark .group-accordion-content,
+.dark .esri-feature,
+.dark .feature-group {
+  background-color: #323232;
+  color: #fff; }
+
+.dark #detailPanel {
+  background-color: #323232;
+  color: #fff;
+  border: none;
+  border-top: solid 1px #a9a9a9; }
+
+.dark .toggle-panel {
+  background-color: #323232;
+  color: #fff; }
+
+.dark .esri-slider.esri-widget {
+  background: #151515; }
+
+.dark .esri-slider__thumb {
+  background-color: #0079c1; }
+
+.text-fade {
+  white-space: nowrap;
+  overflow: hidden; }
+  .text-fade:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 40px;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(to left, #151515 40%, transparent 90%); }
+
+html[dir="rtl"] .text-fade:after {
+  right: initial;
+  left: 40px; }
+
+.dark .text-fade:after {
+  background: linear-gradient(to left, #323232 40%, transparent 90%); }
+
+html[dir="rtl"] .dark .text-fade:after {
+  background: linear-gradient(to right, #323232 40%, transparent 90%); }
+
+.light .text-fade:after {
+  background: linear-gradient(to left, #4a4a4a 40%, transparent 90%); }
+
+html[dir="rtl"] .light .text-fade:after {
+  background: linear-gradient(to right, #4a4a4a 40%, transparent 90%); }
+
+html[dir="rtl"] .top-nav-title {
+  margin-left: unset;
+  margin-right: unset; }
+
+.esri-config-panel-unsupported-browser__browser-icon-container {
+  margin-top: 15px; }
+
+.esri-config-panel-unsupported-browser__browser-icon {
+  margin: 0 10px; }
+
+.esri-config-panel-unsupported-browser__message-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 65%; }

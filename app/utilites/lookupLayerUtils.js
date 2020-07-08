@@ -37,25 +37,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-define(["require", "exports", "esri/core/Collection", "esri/views/layers/support/FeatureFilter", "esri/core/promiseUtils", "../utilites/geometryUtils", "esri/Graphic", "esri/symbols", "esri/views/layers/support/FeatureEffect"], function (require, exports, Collection, FeatureFilter_1, promiseUtils, geometryUtils, Graphic_1, symbols_1, FeatureEffect) {
+define(["require", "exports", "esri/core/Collection", "esri/views/layers/support/FeatureFilter", "esri/core/promiseUtils", "esri/Graphic", "esri/views/layers/support/FeatureEffect"], function (require, exports, Collection_1, FeatureFilter_1, promiseUtils_1, Graphic_1, FeatureEffect) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.clearLookupLayers = exports.hideLookuplayers = exports.getSearchGeometry = exports.getLookupLayers = void 0;
+    Collection_1 = __importDefault(Collection_1);
     FeatureFilter_1 = __importDefault(FeatureFilter_1);
-    geometryUtils = __importStar(geometryUtils);
     Graphic_1 = __importDefault(Graphic_1);
     function getLookupLayers(props) {
         return __awaiter(this, void 0, void 0, function () {
             var view, hideFeaturesOnLoad, lookupLayers, searchableLayers, returnLayers;
             return __generator(this, function (_a) {
                 view = props.view, hideFeaturesOnLoad = props.hideFeaturesOnLoad, lookupLayers = props.lookupLayers;
-                searchableLayers = !lookupLayers ? view.map.layers : new Collection();
+                searchableLayers = !lookupLayers ? view.map.layers : new Collection_1.default();
                 returnLayers = [];
                 // Get all the map layers
                 if (lookupLayers) {
@@ -138,7 +132,7 @@ define(["require", "exports", "esri/core/Collection", "esri/views/layers/support
                 });
                 if (hideFeaturesOnLoad)
                     hideLookuplayers(returnLayers, props.view);
-                return [2 /*return*/, promiseUtils.resolve(returnLayers)];
+                return [2 /*return*/, promiseUtils_1.resolve(returnLayers)];
             });
         });
     }
@@ -149,85 +143,15 @@ define(["require", "exports", "esri/core/Collection", "esri/views/layers/support
             return __generator(this, function (_a) {
                 results = props.results, view = props.view, config = props.config;
                 graphic = _getResultGeometries(results);
-                // add marker to map
-                _addLocationGraphics(graphic, config, view);
                 returnGraphic = graphic;
                 if (graphic.geometry && graphic.geometry.type && graphic.geometry.type === 'polygon') {
                     returnGraphic = new Graphic_1.default({ geometry: graphic.geometry.extent.center, attributes: graphic.attributes });
                 }
-                return [2 /*return*/, promiseUtils.resolve(returnGraphic)];
+                return [2 /*return*/, promiseUtils_1.resolve(returnGraphic)];
             });
         });
     }
     exports.getSearchGeometry = getSearchGeometry;
-    function _addLocationGraphics(graphic, config, view) {
-        return __awaiter(this, void 0, void 0, function () {
-            var includeAddressText, includeAddressGraphic, lightColor, darkColor, theme, color, geometry, displayText_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        includeAddressText = config.includeAddressText, includeAddressGraphic = config.includeAddressGraphic, lightColor = config.lightColor, darkColor = config.darkColor;
-                        return [4 /*yield*/, geometryUtils.getBasemapTheme(view)];
-                    case 1:
-                        theme = _a.sent();
-                        color = theme === "light" ? lightColor : darkColor;
-                        if (graphic && graphic.geometry) {
-                            geometry = graphic.geometry && graphic.geometry.type === 'point' ? graphic.geometry : graphic.geometry.extent.center;
-                            displayText_1 = null;
-                            if (graphic && includeAddressText) {
-                                if (graphic.attributes && graphic.attributes.Match_addr) {
-                                    // replace first comma with a new line character
-                                    displayText_1 = graphic.attributes.Match_addr.replace(',', '\n');
-                                }
-                                else if (graphic.attributes && graphic.attributes.name) {
-                                    displayText_1 = graphic.attributes.name;
-                                }
-                                else if (graphic.layer && graphic.layer.displayField && graphic.layer.displayField !== '') {
-                                    displayText_1 = graphic.attributes[graphic.layer.displayField] || null;
-                                }
-                                else if (graphic.layer && graphic.layer.fields) {
-                                    // get the first string field?
-                                    graphic.layer.fields.some(function (field) {
-                                        if (field.type === 'string') {
-                                            displayText_1 = graphic.attributes[field.name];
-                                            return true;
-                                        }
-                                    });
-                                }
-                            }
-                            if (displayText_1) {
-                                view.graphics.add(new Graphic_1.default({
-                                    geometry: geometry,
-                                    symbol: new symbols_1.TextSymbol({
-                                        font: {
-                                            size: 12
-                                        },
-                                        text: displayText_1,
-                                        color: color,
-                                        horizontalAlignment: 'center'
-                                    })
-                                }));
-                            }
-                            if (includeAddressGraphic) {
-                                view.graphics.add(new Graphic_1.default({
-                                    geometry: geometry,
-                                    symbol: new symbols_1.TextSymbol({
-                                        color: color,
-                                        text: '\ue61d',
-                                        yoffset: 10,
-                                        font: {
-                                            size: 20,
-                                            family: 'calcite-web-icons'
-                                        }
-                                    })
-                                }));
-                            }
-                        }
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }
     function _getResultGeometries(results) {
         var feature = null;
         results.results.some(function (searchResults) {

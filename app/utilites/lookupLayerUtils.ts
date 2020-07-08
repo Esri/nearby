@@ -19,17 +19,16 @@
 
   limitations under the License.​
 */
-import Collection = require('esri/core/Collection');
+import Collection from 'esri/core/Collection';
 import FeatureFilter from 'esri/views/layers/support/FeatureFilter';
 
-import promiseUtils = require('esri/core/promiseUtils');
-import * as geometryUtils from '../utilites/geometryUtils';
+import { resolve } from 'esri/core/promiseUtils';
+import { getBasemapTheme } from '../utilites/geometryUtils';
 import Graphic from 'esri/Graphic';
 import { TextSymbol } from 'esri/symbols';
-import esri = __esri;
 import { ApplicationConfig } from 'ApplicationBase/interfaces';
 import FeatureEffect = require('esri/views/layers/support/FeatureEffect');
-
+import esri = __esri;
 interface ConfigureLayerProperties {
 	id: string;
 	fields: string[];
@@ -133,83 +132,20 @@ export async function getLookupLayers(props: LookupLayerProps): Promise<__esri.F
 
 	if (hideFeaturesOnLoad) hideLookuplayers(returnLayers, props.view);
 
-	return promiseUtils.resolve(returnLayers);
+	return resolve(returnLayers);
 }
 export async function getSearchGeometry(props: SearchGeometryProps): Promise<esri.Graphic> {
 	const { results, view, config } = props;
 	let graphic = _getResultGeometries(results);
 
-	// add marker to map
-	_addLocationGraphics(graphic, config, view);
-
 	let returnGraphic = graphic;
 	if (graphic.geometry && graphic.geometry.type && graphic.geometry.type === 'polygon') {
 		returnGraphic = new Graphic({ geometry: graphic.geometry.extent.center, attributes: graphic.attributes });
 	}
-	return promiseUtils.resolve(returnGraphic);
+	return resolve(returnGraphic);
 
 }
-async function _addLocationGraphics(graphic, config, view) {
-	const { includeAddressText, includeAddressGraphic, lightColor, darkColor } = config;
-	// add a custom graphic at geocoded location if we have something to display
-	const theme = await geometryUtils.getBasemapTheme(view);
-	const color = theme === "light" ? lightColor : darkColor;
-	if (graphic && graphic.geometry) {
-		const geometry =
-			graphic.geometry && graphic.geometry.type === 'point' ? graphic.geometry : graphic.geometry.extent.center;
-		let displayText = null;
 
-		if (graphic && includeAddressText) {
-			if (graphic.attributes && graphic.attributes.Match_addr) {
-				// replace first comma with a new line character
-				displayText = graphic.attributes.Match_addr.replace(',', '\n');
-			} else if (graphic.attributes && graphic.attributes.name) {
-				displayText = graphic.attributes.name;
-			} else if (graphic.layer && graphic.layer.displayField && graphic.layer.displayField !== '') {
-				displayText = graphic.attributes[graphic.layer.displayField] || null;
-			} else if (graphic.layer && graphic.layer.fields) {
-				// get the first string field?
-				graphic.layer.fields.some((field) => {
-					if (field.type === 'string') {
-						displayText = graphic.attributes[field.name];
-						return true;
-					}
-				});
-			}
-		}
-		if (displayText) {
-			view.graphics.add(
-				new Graphic({
-					geometry,
-					symbol: new TextSymbol({
-						font: {
-							size: 12
-						},
-						text: displayText,
-						color,
-						horizontalAlignment: 'center'
-					})
-				})
-			);
-		}
-		if (includeAddressGraphic) {
-			view.graphics.add(
-				new Graphic({
-					geometry,
-					symbol: new TextSymbol({
-						color,
-						text: '\ue61d', // esri-icon-map-pin
-						yoffset: 10,
-						font: {
-							size: 20,
-							family: 'calcite-web-icons'
-						}
-					})
-				})
-			);
-		}
-	}
-}
 function _getResultGeometries(results): esri.Graphic {
 	let feature = null;
 	results.results.some((searchResults) => {

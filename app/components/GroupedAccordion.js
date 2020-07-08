@@ -17,20 +17,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "esri/core/promiseUtils", "./Accordion", "esri/core/accessorSupport/decorators", "esri/widgets/Feature", "esri/core/Handles", "esri/widgets/support/widget"], function (require, exports, promiseUtils, Accordion_1, decorators_1, Feature_1, Handles_1, widget_1) {
+define(["require", "exports", "esri/core/promiseUtils", "./Accordion", "esri/core/accessorSupport/decorators", "esri/widgets/Feature", "esri/core/Handles", "esri/widgets/support/widget"], function (require, exports, promiseUtils_1, Accordion_1, decorators_1, Feature_1, Handles_1, widget_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    promiseUtils = __importStar(promiseUtils);
     Accordion_1 = __importDefault(Accordion_1);
     Feature_1 = __importDefault(Feature_1);
     Handles_1 = __importDefault(Handles_1);
@@ -71,7 +63,7 @@ define(["require", "exports", "esri/core/promiseUtils", "./Accordion", "esri/cor
         //
         //--------------------------------------------------------------------------
         function GroupedAccordion(props) {
-            var _this = _super.call(this) || this;
+            var _this = _super.call(this, props) || this;
             _this.zoom = true;
             //--------------------------------------------------------------------------
             //
@@ -157,7 +149,7 @@ define(["require", "exports", "esri/core/promiseUtils", "./Accordion", "esri/cor
             node.appendChild(container);
             // Set the count and then update with title if we have one 
             if (graphic && graphic.attributes && graphic.attributes.lookupDistance && this.config.includeDistance) {
-                distNode.innerHTML = this.convertUnitText(graphic.attributes.lookupDistance, this.config.units);
+                distNode.innerHTML = this.convertUnitText(graphic.attributes.lookupDistance, this.config.searchUnits);
             }
             // Add click event if results are interactive 
             var clickableResults = this.config.interactiveResults === false ? false : true;
@@ -166,7 +158,7 @@ define(["require", "exports", "esri/core/promiseUtils", "./Accordion", "esri/cor
                     _this.zoom = true;
                     _this._selectAccordionSection(node.parentElement, graphic);
                 });
-                node.addEventListener("mouseover", promiseUtils.debounce(function () {
+                node.addEventListener("mouseover", promiseUtils_1.debounce(function () {
                     _this.hoveredItem = feature;
                 }));
             }
@@ -253,11 +245,14 @@ define(["require", "exports", "esri/core/promiseUtils", "./Accordion", "esri/cor
         __decorate([
             decorators_1.property()
         ], GroupedAccordion.prototype, "zoom", void 0);
+        __decorate([
+            decorators_1.property()
+        ], GroupedAccordion.prototype, "config", void 0);
         GroupedAccordion = __decorate([
             decorators_1.subclass('app.GroupedAccordion')
         ], GroupedAccordion);
         return GroupedAccordion;
-    }(decorators_1.declared(Accordion_1.default)));
+    }((Accordion_1.default)));
     exports.default = GroupedAccordion;
 });
 //# sourceMappingURL=GroupedAccordion.js.map

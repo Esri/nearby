@@ -74,17 +74,9 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "../utilites/errorUtils", "dojo/i18n!../nls/resources", "esri/widgets/support/widget", "ApplicationBase/support/itemUtils"], function (require, exports, __extends, __decorate, decorators_1, Widget_1, errorUtils, i18n, widget_1, itemUtils_1) {
+define(["require", "exports", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "../utilites/errorUtils", "dojo/i18n!../nls/resources", "esri/widgets/support/widget", "ApplicationBase/support/itemUtils"], function (require, exports, decorators_1, Widget_1, errorUtils_1, i18n, widget_1, itemUtils_1) {
     "use strict";
     Widget_1 = __importDefault(Widget_1);
-    errorUtils = __importStar(errorUtils);
     var CSS = {
         miniMap: {
             panel: 'mini-map-panel'
@@ -124,7 +116,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         //
         //--------------------------------------------------------------------------
         function MapPanel(props) {
-            var _this = _super.call(this) || this;
+            var _this = _super.call(this, props) || this;
             _this.mainMapAccessoryClassName = 'main-map-content';
             _this.selectedItemTitle = null;
             _this.isMobileView = false;
@@ -164,7 +156,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         };
         MapPanel.prototype._createMap = function (container) {
             return __awaiter(this, void 0, void 0, function () {
-                var portalItem, appProxies, defaultViewProperties, mapContainer, viewProperties, map, _a, handler_1, rootNode, k, error_1, title;
+                var portalItem, appProxies, defaultViewProperties, components, mapContainer, viewProperties, map, _a, handler_1, rootNode, k, error_1, title;
                 var _this = this;
                 return __generator(this, function (_b) {
                     switch (_b.label) {
@@ -178,10 +170,11 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                                 }
                             });
                             defaultViewProperties = itemUtils_1.getConfigViewProperties(this.config);
+                            components = ["attribution"];
                             mapContainer = {
                                 container: container
                             };
-                            viewProperties = __assign(__assign({}, defaultViewProperties), mapContainer);
+                            viewProperties = __assign(__assign(__assign({}, defaultViewProperties), { ui: { components: components } }), mapContainer);
                             _b.label = 1;
                         case 1:
                             _b.trys.push([1, 4, , 5]);
@@ -192,7 +185,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                             return [4 /*yield*/, itemUtils_1.createView(__assign(__assign({}, viewProperties), { map: map }))];
                         case 3:
                             _a.view = (_b.sent());
-                            if (!this.config.zoom) {
+                            if (!this.config.mapZoom) {
                                 this.view.ui.remove("zoom");
                             }
                             this.view.highlightOptions.fillOpacity = 0;
@@ -209,7 +202,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                         case 4:
                             error_1 = _b.sent();
                             title = (this.item && this.item.title) || ' the application';
-                            errorUtils.displayError({ title: 'Error', message: "Unable to load " + title + " " });
+                            errorUtils_1.displayError({ title: 'Error', message: "Unable to load " + title + " " });
                             return [3 /*break*/, 5];
                         case 5: return [2 /*return*/];
                     }
@@ -252,7 +245,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.subclass('app.MapPanel')
         ], MapPanel);
         return MapPanel;
-    }(decorators_1.declared(Widget_1.default)));
+    }((Widget_1.default)));
     return MapPanel;
 });
 //# sourceMappingURL=MapPanel.js.map

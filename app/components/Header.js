@@ -20,7 +20,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "dojo/i18n!../nls/resources", "esri/widgets/support/widget"], function (require, exports, __extends, __decorate, decorators_1, Widget_1, i18n, widget_1) {
+define(["require", "exports", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "dojo/i18n!../nls/resources", "esri/widgets/support/widget", "ApplicationBase/support/domHelper", "esri/core/watchUtils"], function (require, exports, decorators_1, Widget_1, i18n, widget_1, domHelper_1, watchUtils_1) {
     "use strict";
     Widget_1 = __importDefault(Widget_1);
     var CSS = {
@@ -33,7 +33,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             topNavLink: 'top-nav-link',
             topNav: 'top-nav',
             topNavTitle: 'top-nav-title',
-            ellipsis: 'text-ellipsis'
+            ellipsis: 'text-fade'
         }
     };
     var Header = /** @class */ (function (_super) {
@@ -44,8 +44,12 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         //
         //--------------------------------------------------------------------------
         function Header(props) {
-            return _super.call(this) || this;
+            return _super.call(this, props) || this;
         }
+        Header.prototype.postInitialize = function () {
+            var handle = watchUtils_1.init(this, "config.title", this._onTitleUpdate);
+            this.own(handle);
+        };
         Header.prototype.render = function () {
             var _a = this.config, title = _a.title, titleLink = _a.titleLink;
             var titleNode = titleLink ? (widget_1.tsx("a", { target: "_blank", rel: "noopener", href: titleLink }, title)) : (title);
@@ -53,8 +57,8 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 widget_1.tsx("button", { bind: this, onclick: this._showDetailPanel, "aria-label": i18n.tools.info, title: i18n.tools.info, class: this.classes(CSS.theme, CSS.calciteStyles.topNavTitle, CSS.calciteStyles.buttonLink, CSS.calciteStyles.iconDesc) })) : null;
             return (widget_1.tsx("header", { class: this.classes(CSS.calciteStyles.topNav, CSS.theme) },
                 widget_1.tsx("div", { class: this.classes(CSS.calciteStyles.fade) },
-                    widget_1.tsx("h1", { class: this.classes(CSS.calciteStyles.topNavTitle, CSS.calciteStyles.ellipsis) }, titleNode),
-                    infoButton)));
+                    widget_1.tsx("h1", { title: title, class: this.classes(CSS.calciteStyles.topNavTitle, CSS.calciteStyles.ellipsis) }, titleNode)),
+                infoButton));
         };
         Header.prototype._showDetailPanel = function (e) {
             // add class to detail panel to add close button and position at top of panel
@@ -68,8 +72,13 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 this.detailPanel.showPanel();
             }
         };
+        Header.prototype._onTitleUpdate = function () {
+            domHelper_1.setPageTitle(this.config.title);
+        };
+        ;
         __decorate([
-            decorators_1.property()
+            decorators_1.property(),
+            widget_1.renderable(["title", "titleLink"])
         ], Header.prototype, "config", void 0);
         __decorate([
             decorators_1.property()
@@ -78,7 +87,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.subclass('app.Header')
         ], Header);
         return Header;
-    }(decorators_1.declared(Widget_1.default)));
+    }((Widget_1.default)));
     return Header;
 });
 //# sourceMappingURL=Header.js.map

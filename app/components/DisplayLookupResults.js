@@ -56,22 +56,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/Handles", "esri/widgets/support/widget", "../utilites/geometryUtils", "esri/core/promiseUtils", "esri/core/watchUtils", "../utilites/lookupLayerUtils", "esri/views/layers/support/FeatureFilter", "esri/views/layers/support/FeatureEffect", "./GroupedAccordion", "esri/widgets/Expand", "dojo/i18n!../nls/resources"], function (require, exports, __extends, __decorate, decorators_1, Widget_1, Handles_1, widget_1, geometryUtils, promiseUtils, watchUtils, lookupLayerUtils, FeatureFilter_1, FeatureEffect_1, GroupedAccordion_1, Expand_1, i18n) {
+define(["require", "exports", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/core/Handles", "esri/widgets/support/widget", "../utilites/geometryUtils", "esri/core/promiseUtils", "esri/core/watchUtils", "../utilites/lookupLayerUtils", "esri/views/layers/support/FeatureFilter", "esri/views/layers/support/FeatureEffect", "./GroupedAccordion", "esri/widgets/Expand", "dojo/i18n!../nls/resources"], function (require, exports, decorators_1, Widget_1, Handles_1, widget_1, geometryUtils_1, promiseUtils_1, watchUtils_1, lookupLayerUtils_1, FeatureFilter_1, FeatureEffect_1, GroupedAccordion_1, Expand_1, i18n) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     Widget_1 = __importDefault(Widget_1);
     Handles_1 = __importDefault(Handles_1);
-    geometryUtils = __importStar(geometryUtils);
-    promiseUtils = __importStar(promiseUtils);
-    watchUtils = __importStar(watchUtils);
-    lookupLayerUtils = __importStar(lookupLayerUtils);
     FeatureFilter_1 = __importDefault(FeatureFilter_1);
     FeatureEffect_1 = __importDefault(FeatureEffect_1);
     GroupedAccordion_1 = __importDefault(GroupedAccordion_1);
@@ -115,7 +104,8 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         //
         //--------------------------------------------------------------------------
         function DisplayLookupResults(props) {
-            var _this = _super.call(this) || this;
+            var _this = _super.call(this, props) || this;
+            _this.lookupGraphics = null;
             _this.empty = true;
             _this.lookupLayers = null;
             _this.expand = [];
@@ -129,11 +119,8 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             _this._featureResults = null;
             _this._viewPoint = null;
             _this._accordion = null;
-            _this._bufferGraphic = null;
             _this._handles = new Handles_1.default();
             _this._toggle = false;
-            var distance = props.config.distance;
-            _this.distance = distance || 0;
             return _this;
         }
         DisplayLookupResults.prototype.render = function () {
@@ -165,11 +152,12 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         };
         DisplayLookupResults.prototype._addDetailAccordion = function (container) {
             var _this = this;
-            var _a = this, _featureResults = _a._featureResults, config = _a.config, view = _a.view;
+            var _a, _b;
+            var _c = this, _featureResults = _c._featureResults, view = _c.view;
             var eventHandler = this._handleActionItem.bind(this);
             var actionItems = [];
-            if (config.showDirections) { // check status
-                if (this.directions && this.directions.viewModel && this.directions.viewModel.state && this.directions.viewModel.state !== "error") {
+            if (this.config.showDirections) { // check status
+                if (((_b = (_a = this === null || this === void 0 ? void 0 : this.directions) === null || _a === void 0 ? void 0 : _a.viewModel) === null || _b === void 0 ? void 0 : _b.state) === "ready") {
                     actionItems.push({
                         icon: 'icon-ui-map-pin',
                         id: 'directions',
@@ -181,7 +169,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             this.accordion = new GroupedAccordion_1.default({
                 actionBarItems: actionItems,
                 featureResults: _featureResults,
-                config: config,
+                config: this.config,
                 view: view,
                 container: container
             });
@@ -235,7 +223,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                             return [4 /*yield*/, this.directions.viewModel.getDirections()];
                         case 1:
                             _a.sent();
-                            if (!this.config.noMap) return [3 /*break*/, 3];
+                            if (!this.config.hideMap) return [3 /*break*/, 3];
                             return [4 /*yield*/, this.directions.getDirections()];
                         case 2:
                             results = _a.sent();
@@ -295,22 +283,22 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             }
             return returnGraphic;
         };
-        DisplayLookupResults.prototype.queryFeatures = function (location, distance) {
+        DisplayLookupResults.prototype.queryFeatures = function (location) {
             return __awaiter(this, void 0, void 0, function () {
                 var promises;
                 var _this = this;
                 return __generator(this, function (_a) {
                     this.location = location;
-                    this.distance = distance;
+                    this.lookupGraphics.graphic = location;
                     this.state = 'loading';
                     promises = [];
                     if (!location) {
                         this.state = 'init';
                         this._featureResults = [];
-                        promiseUtils.resolve();
+                        promiseUtils_1.resolve();
                     }
                     else {
-                        this._addBuffer(location.geometry);
+                        this.lookupGraphics.addGraphics();
                         this.lookupLayers.forEach(function (layer) {
                             promises.push(_this._queryFeatureLayers(layer, location.geometry));
                         });
@@ -368,7 +356,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                         case 1:
                             layerView = _a.sent();
                             if (!layerView.updating) return [3 /*break*/, 3];
-                            return [4 /*yield*/, watchUtils.whenFalseOnce(layerView, "updating")];
+                            return [4 /*yield*/, watchUtils_1.whenFalseOnce(layerView, "updating")];
                         case 2:
                             _a.sent();
                             _a.label = 3;
@@ -384,7 +372,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                                         query.where = "1=0";
                                         _this._applyLayerEffectAndFilter(layerView, query);
                                     }
-                                    return promiseUtils.resolve({
+                                    return promiseUtils_1.resolve({
                                         features: results.features,
                                         title: layer.get("title") ? layer.get("title") : null,
                                         id: layer.get("id") ? layer.get("id") : null
@@ -395,7 +383,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             });
         };
         DisplayLookupResults.prototype._createQuery = function (layer, location) {
-            var _a = this.config, relationship = _a.relationship, units = _a.units, singleLocationPolygons = _a.singleLocationPolygons;
+            var _a = this.config, relationship = _a.relationship, searchUnits = _a.searchUnits, singleLocationPolygons = _a.singleLocationPolygons;
             var type = layer.layer.geometryType;
             // we need return geom since we have to get distances and zoom to selected 
             var query = layer.layer.createQuery();
@@ -403,8 +391,8 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             query.geometry = location;
             // Always set with points and lines but also set for 
             // polygons that don't have singleLocationPolygons set to true
-            query.distance = type === "polygon" && singleLocationPolygons ? 0 : this.distance;
-            query.units = units;
+            query.distance = type === "polygon" && singleLocationPolygons ? 0 : this.config.sliderRange.default;
+            query.units = searchUnits;
             query.spatialRelationship = relationship;
             return query;
         };
@@ -429,7 +417,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                     });
                 }
             }
-            if (this.config.noMap) {
+            if (this.config.hideMap) {
                 var printPage = document.getElementById("printPanel");
                 printPage.classList.add("hide");
                 printPage.innerHTML = null;
@@ -439,7 +427,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             //return layerView.layer;
             var unsupportedIds = ["4742", "8042", "8086", "4757"];
             var view = this.view;
-            if (this.config.noMap || this.config.hideLookupLayers) {
+            if (this.config.hideMap || this.config.hideLayers) {
                 return layerView.layer;
             }
             if (!layerView.visible) {
@@ -450,22 +438,24 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             }
             else if (view && view.spatialReference && (!view.spatialReference.isGeographic && !view.spatialReference.isWGS84 && !view.spatialReference.isWebMercator)) {
                 return layerView.layer;
-            } /*else if (view && view.spatialReference && view.spatialReference.wkid && unsupportedIds.indexOf(view.spatialReference.wkid.toString()) !== -1) {
+            }
+            else if (view && view.spatialReference && view.spatialReference.wkid && unsupportedIds.indexOf(view.spatialReference.wkid.toString()) !== -1) {
                 return layerView.layer;
-            }*/
+            }
             else {
-                return layerView;
+                return layerView.layer;
             }
         };
         DisplayLookupResults.prototype._applyLayerEffectAndFilter = function (layerView, query) {
-            var geometry = query.geometry, units = query.units, spatialRelationship = query.spatialRelationship, where = query.where, distance = query.distance;
+            var _a, _b;
+            var geometry = query.geometry, units = query.units, spatialRelationship = query.spatialRelationship, where = query.where;
             var props = {
                 geometry: geometry,
                 spatialRelationship: spatialRelationship,
                 where: where
             };
-            if (this.distance && distance) {
-                props.distance = this.distance;
+            if ((_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.sliderRange) === null || _b === void 0 ? void 0 : _b.default) {
+                props.distance = this.config.sliderRange.default;
                 if (units) {
                     props.units = units;
                 }
@@ -475,51 +465,14 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             layerView.filter = filter;
             layerView.effect = effect;
         };
-        DisplayLookupResults.prototype._addBuffer = function (geometry) {
-            return __awaiter(this, void 0, void 0, function () {
-                var buffer, theme;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            buffer = this._createBuffer(geometry);
-                            if (!this.config.drawBuffer) return [3 /*break*/, 2];
-                            return [4 /*yield*/, geometryUtils.getBasemapTheme(this.view)];
-                        case 1:
-                            theme = _a.sent();
-                            // Let's create the buffer but only add it to the  map if drawBuffer is enabled. 
-                            if (this._bufferGraphic) {
-                                this.view.graphics.remove(this._bufferGraphic);
-                            }
-                            this._bufferGraphic = geometryUtils.createBufferGraphic(buffer, theme, this.config);
-                            this.view.graphics.add(this._bufferGraphic);
-                            _a.label = 2;
-                        case 2: return [4 /*yield*/, this.view.goTo(buffer)];
-                        case 3:
-                            _a.sent();
-                            return [2 /*return*/];
-                    }
-                });
-            });
-        };
-        DisplayLookupResults.prototype._createBuffer = function (location) {
-            var _a = this.config, portal = _a.portal, units = _a.units;
-            var buffer = geometryUtils.bufferGeometry({
-                location: location,
-                portal: portal,
-                distance: this.distance,
-                unit: units
-            });
-            return buffer;
-        };
         DisplayLookupResults.prototype._sortFeatures = function (features) {
-            var _a = this.config, includeDistance = _a.includeDistance, units = _a.units, portal = _a.portal;
-            if (includeDistance && this.location && this.distance) {
+            var _a = this.config, includeDistance = _a.includeDistance, searchUnits = _a.searchUnits, sliderRange = _a.sliderRange;
+            if (includeDistance && this.location && sliderRange) {
                 // add distance val to the features and sort array by distance
-                geometryUtils.getDistances({
+                geometryUtils_1.getDistances({
                     location: this.location.geometry,
-                    portal: portal,
-                    distance: this.distance || 0,
-                    unit: units,
+                    distance: sliderRange === null || sliderRange === void 0 ? void 0 : sliderRange.default,
+                    unit: searchUnits,
                     features: features
                 });
                 // sort the features based on the distance
@@ -533,16 +486,14 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         DisplayLookupResults.prototype.clearResults = function () {
             this._toggle = false;
             this.empty = true;
-            if (this._bufferGraphic && this.view) {
-                this.view.graphics.remove(this._bufferGraphic);
-            }
+            this.lookupGraphics.clearGraphics();
             this.accordion && this.accordion.clear();
             this._featureResults = null;
-            if (this.config.hideLookupLayers) {
-                lookupLayerUtils.hideLookuplayers(this.lookupLayers, this.view);
+            if (this.config.hideLayers) {
+                lookupLayerUtils_1.hideLookuplayers(this.lookupLayers, this.view);
             }
             else {
-                lookupLayerUtils.clearLookupLayers(this.lookupLayers, this.view);
+                lookupLayerUtils_1.clearLookupLayers(this.lookupLayers, this.view);
             }
             this._clearDirections();
             this.clearHighlights();
@@ -599,6 +550,9 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         ], DisplayLookupResults.prototype, "view", void 0);
         __decorate([
             decorators_1.property()
+        ], DisplayLookupResults.prototype, "lookupGraphics", void 0);
+        __decorate([
+            decorators_1.property()
         ], DisplayLookupResults.prototype, "config", void 0);
         __decorate([
             decorators_1.property()
@@ -611,9 +565,6 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
         ], DisplayLookupResults.prototype, "empty", void 0);
         __decorate([
             decorators_1.property()
-        ], DisplayLookupResults.prototype, "distance", void 0);
-        __decorate([
-            decorators_1.property()
         ], DisplayLookupResults.prototype, "lookupLayers", void 0);
         __decorate([
             decorators_1.property()
@@ -622,6 +573,9 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.property()
         ], DisplayLookupResults.prototype, "directions", void 0);
         __decorate([
+            decorators_1.property()
+        ], DisplayLookupResults.prototype, "portal", void 0);
+        __decorate([
             decorators_1.property(),
             widget_1.renderable()
         ], DisplayLookupResults.prototype, "state", void 0);
@@ -629,7 +583,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.subclass('app.DisplayLookupResults')
         ], DisplayLookupResults);
         return DisplayLookupResults;
-    }(decorators_1.declared(Widget_1.default)));
+    }((Widget_1.default)));
     exports.default = DisplayLookupResults;
 });
 //# sourceMappingURL=DisplayLookupResults.js.map

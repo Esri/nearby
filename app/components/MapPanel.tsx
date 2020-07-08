@@ -1,9 +1,7 @@
-/// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
-/// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-import { subclass, declared, property } from 'esri/core/accessorSupport/decorators';
+
+import { subclass, property } from 'esri/core/accessorSupport/decorators';
 import Widget from 'esri/widgets/Widget';
-import Accessor from 'esri/core/Accessor';
-import * as errorUtils from '../utilites/errorUtils';
+import { displayError } from '../utilites/errorUtils';
 import i18n = require('dojo/i18n!../nls/resources');
 import { tsx, renderable } from 'esri/widgets/support/widget';
 import { ApplicationConfig } from 'ApplicationBase/interfaces';
@@ -53,7 +51,7 @@ interface MapPanelProps extends esri.WidgetProperties {
 	isMobileView?: boolean;
 }
 @subclass('app.MapPanel')
-class MapPanel extends declared(Widget) {
+class MapPanel extends (Widget) {
 	//--------------------------------------------------------------------------
 	//
 	//  Properties
@@ -89,7 +87,7 @@ class MapPanel extends declared(Widget) {
 	//
 	//--------------------------------------------------------------------------
 	constructor(props: MapPanelProps) {
-		super();
+		super(props);
 		const { config } = props.base;
 		this.config = config;
 	}
@@ -159,13 +157,14 @@ class MapPanel extends declared(Widget) {
 			}
 		});
 		const defaultViewProperties = getConfigViewProperties(this.config);
-
+		const components = ["attribution"];
 		const mapContainer = {
 			container
 		};
 
 		const viewProperties = {
 			...defaultViewProperties,
+			ui: { components },
 			...mapContainer
 		};
 
@@ -173,7 +172,7 @@ class MapPanel extends declared(Widget) {
 			const map = (await createMapFromItem({ item: this.item, appProxies })) as esri.WebMap;
 
 			this.view = (await createView({ ...viewProperties, map })) as esri.MapView;
-			if (!this.config.zoom) {
+			if (!this.config.mapZoom) {
 				this.view.ui.remove("zoom");
 			}
 
@@ -192,7 +191,7 @@ class MapPanel extends declared(Widget) {
 			}
 		} catch (error) {
 			const title = (this.item && this.item.title) || ' the application';
-			errorUtils.displayError({ title: 'Error', message: `Unable to load ${title} ` });
+			displayError({ title: 'Error', message: `Unable to load ${title} ` });
 		}
 	}
 

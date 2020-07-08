@@ -1,8 +1,7 @@
-/// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
-/// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-import { subclass, declared, property } from 'esri/core/accessorSupport/decorators';
+
+import { subclass, property } from 'esri/core/accessorSupport/decorators';
 import Widget from 'esri/widgets/Widget';
-import Accessor from 'esri/core/Accessor';
+
 
 import MapPanel from './MapPanel';
 import Handles from 'esri/core/Handles';
@@ -32,11 +31,12 @@ const CSS = {
 
 interface FooterProps extends esri.WidgetProperties {
 	mapPanel: MapPanel;
+	hideMap: boolean;
 	config: ApplicationConfig;
 }
 
 @subclass('app.Footer')
-class Footer extends declared(Widget) {
+class Footer extends (Widget) {
 	//--------------------------------------------------------------------------
 	//
 	//  Properties
@@ -44,7 +44,13 @@ class Footer extends declared(Widget) {
 	//--------------------------------------------------------------------------
 
 	@property() mapPanel: MapPanel;
+
 	@property() config: ApplicationConfig;
+
+	@property()
+	@renderable()
+	hideMap: boolean;
+
 	@property()
 	@renderable()
 	mapButtonVisible = true;
@@ -61,16 +67,17 @@ class Footer extends declared(Widget) {
 	//
 	//--------------------------------------------------------------------------
 	constructor(props: FooterProps) {
-		super();
+		super(props);
 	}
 	render() {
+		const showFooter = this.hideMap ? "hide" : null;
 		const mapButton = this.mapButtonVisible ? (<button bind={this} onclick={this.showMap} class={this.classes(CSS.button, CSS.fillButton, CSS.appButton, CSS.mapIcon)}>{i18n.map.label}</button>
 		) :
 			(<button bind={this} onclick={this.closeMap} class={this.classes(CSS.button, CSS.fillButton, CSS.appButton, CSS.tableIcon)}>{i18n.tools.results}</button>
 			);
 		return (
 			<div
-				class={this.classes(CSS.footerColumn, CSS.phoneColumn, CSS.tabletColumn)}>
+				class={this.classes(showFooter, CSS.footerColumn, CSS.phoneColumn, CSS.tabletColumn)}>
 				<div class={this.classes(CSS.paddingLeft, CSS.paddingRight, CSS.phoneColumn, CSS.tabletColumn, CSS.tabletShow)} >
 					{mapButton}
 				</div>;

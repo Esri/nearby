@@ -1,310 +1,177 @@
 {
-  "configurationSettings": [{
-    "category": "General",
-    "fields": [{
-      "type": "itembrowser",
-      "fieldName": "webmap",
-      "conditions": ["4x"],
-      "label": "Select",
-      "itemTypes": ["Web Map"],
-      "defaultContent": true,
-      "showOnLoad": true
-    }, {
-      "type": "appproxies",
-      "serviceProxies": [{
-        "title": "Route",
-        "name": "route"
-      }]
-    }, {
-      "type": "string",
-      "fieldName": "title",
-      "tooltip": "Update app title",
-      "label": "Title"
-    }, {
-      "type": "string",
-      "fieldName": "titleLink",
-      "tooltip": "Web page URL",
-      "label": "Provide a URL to open a web page when users click the title. (optional)"
-    }, {
-      "type": "string",
-      "fieldName": "detailTitle",
-      "label": "Provide a title for a section about the app (Users can close this panel.)"
-    }, {
-      "type": "string",
-      "fieldName": "detailContent",
-      "label": "Provide details to help users understand your app.",
-      "stringFieldOption": "richtext"
-    }, {
-      "type": "boolean",
-      "fieldName": "socialSharing",
-      "label": "Add social sharing buttons"
-    }]
-  }, {
-    "category": "Theme",
-    "fields": [{
-      "type": "subcategory",
-      "label": "Change the header background and text colors (optional)"
-    }, {
-      "type": "color",
-      "fieldName": "headerBackground",
-      "label": "Header background color",
-      "sharedThemeProperty": "header.background"
-    }, {
-      "type": "color",
-      "fieldName": "headerColor",
-      "label": "Header text color",
-      "sharedThemeProperty": "header.text"
-    }, {
-      "type": "subcategory",
-      "label": "Change the button background and text colors for the Map and Info buttons that appear on phones and tablets. (optional)"
-    }, {
-      "type": "color",
-      "fieldName": "buttonBackground",
-      "label": "Button background color",
-      "sharedThemeProperty": "button.background"
-    }, {
-      "type": "color",
-      "fieldName": "buttonColor",
-      "label": "Button icon and text color",
-      "sharedThemeProperty": "button.text"
-    }]
-  }, {
-    "category": "Search",
-    "fields": [{
-      "type": "subcategory",
-      "label": "Search radius"
-    }, {
-      "type": "options",
-      "fieldName": "units",
-      "label": "Units (straight line distance)",
-      "options": [{
-        "label": "feet",
-        "value": "feet"
-      }, {
-        "label": "kilometers",
-        "value": "kilometers"
-      }, {
-        "label": "meters",
-        "value": "meters"
-      }, {
-        "label": "miles",
-        "value": "miles"
-      }]
-    }, {
-      "type": "paragraph",
-      "value": "Distance Range Slider: "
-    }, {
-      "type": "number",
-      "fieldName": "minDistance",
-      "label": "Minimum",
-      "tooltip": "Shortest distance for search radius used to filter results",
-      "constraints": {
-        "min": 0
+  "about": {
+    "title": {
+      "express": true,
+      "defaultValue": ""
+    },
+    "titleLink": {
+      "express": false,
+      "defaultValue": ""
+    },
+    "introductionTitle": {
+      "express": true,
+      "defaultValue": "Welcome!"
+    },
+    "introductionContent": {
+      "express": true,
+      "defaultValue": "Search for an address to learn more about the location and its surrounding area.</br>If you don't know the address, use one of these search methods: <ul><li>Click the search box and type in an address or choose <b>Use current location </b><img alt src='./assets/search-tip.png'/></li><li>Click within the map <div><img alt src='./assets/map-tip.png'/></div></li></ul></br> Results will include information about features of interest."
+    },
+    "legend": {
+      "defaultValue": false,
+      "express": false,
+      "legendPosition": {
+        "defaultValue": "top-right"
+      },
+      "legendOpenAtStart": {
+        "defaultValue": false
       }
-    }, {
-      "type": "number",
-      "fieldName": "maxDistance",
-      "label": "Maximum",
-      "tooltip": "Longest distance for search radius used to filter results",
-      "constraints": {
-        "min": 0
+    }
+  },
+  "themeLayout": {
+    "theme": {
+      "applySharedTheme": {
+        "defaultValue": true,
+        "express": true
+      },
+      "theme": {
+        "defaultValue": "light",
+        "express": true
       }
-    }, {
-      "type": "number",
-      "fieldName": "distance",
-      "tooltip": "Default distance for search radius when users open the app.",
-      "label": "Default distance",
-      "constraints": {
-        "min": 0
-      }
-    }, {
-      "type": "number",
-      "fieldName": "precision",
-      "label": "Decimal places",
-      "tooltip": "Number of decimal places used to round values.",
-      "constraints": {
-        "min": 0
-      }
-    }, {
-      "type": "paragraph",
-      "value": "When checked 'Change distance' and 'Change min/max' allow users to change the parameters of the search by editing the labels on the Distance Range Slider. "
-    }, {
-      "type": "boolean",
-      "fieldName": "labelInputsEnabled",
-      "label": "Change distance",
-      "tooltip": "Allow editing of slider value via label."
-    }, {
-      "type": "boolean",
-      "fieldName": "rangeLabelInputsEnabled",
-      "label": "Change min/max ",
-      "tooltip": "Allow app users to edit min and max range."
-    }, {
-      "type": "subcategory",
-      "label": "Configure the locators and layers that are searchable"
-    }, {
-      "type": "search",
-      "fieldName": "searchConfig"
-    }]
-  }, {
-    "category": "Results",
-    "fields": [{
-      "type": "multilayerandfieldselector",
-      "fieldName": "lookupLayers",
-      "label": "Select the layers to include in the search results.",
-      "layerOptions": {
-        "supportedTypes": ["FeatureLayer", "MapServiceLayer"]
-      }
-    }, {
-      "type": "subcategory",
-      "label": "Refine what is included with the results"
-    }, {
-      "type": "boolean",
-      "label": "Include directions link",
-      "fieldName": "showDirections"
-    }, {
-      "type": "boolean",
-      "label": "Add distance values to results",
-      "fieldName": "includeDistance"
-    }, {
-      "type": "paragraph",
-      "value": "Check 'Group results by layer' if you have search results from multiple layers and you want them to be grouped by layer name."
-    }, {
-      "type": "boolean",
-      "fieldName": "groupResultsByLayer",
-      "label": "Group results by layer"
-    }, {
-      "type": "paragraph",
-      "value": "Check 'Find intersecting polygon(s)' to limit the results to only include polygon features that contain the searched location.  All other polygon features within the search radius will be included in the results."
-    }, {
-      "type": "boolean",
-      "fieldName": "singleLocationPolygons",
-      "label": "Find intersecting polygon(s)",
-      "tooltip": "Results include polygon(s) containing the searched location rather than polygon(s) within the search radius."
-    }, {
-      "type": "string",
-      "label": "Add text before the results",
-      "fieldName": "resultsPanelPreText",
-      "stringFieldOption": "richtext"
-    }, {
-      "type": "string",
-      "label": "Add text after the results",
-      "fieldName": "resultsPanelPostText",
-      "stringFieldOption": "richtext"
-    }, {
-      "type": "string",
-      "label": "Add text if no results are found",
-      "fieldName": "noResultsMessage",
-      "stringFieldOption": "richtext"
-    }]
-  }, {
-    "category": "Map Options",
-    "fields": [{
-      "type": "boolean",
-      "fieldName": "hideLookupLayers",
-      "label": "Hide the layers when the app loads and only show when part of search results."
-    }, {
-      "type": "conditional",
-      "condition": false,
-      "label": "Add map pin and/or label at the searched location",
-      "fieldName": "addMarker",
-      "items": [{
-        "type": "boolean",
-        "fieldName": "includeAddressGraphic",
-        "label": "Include a map pin on the map to show the searched address"
-      }, {
-        "type": "boolean",
-        "fieldName": "includeAddressText",
-        "label": "Include the search address as a label on the map"
-      }]
-    }, {
-      "type": "boolean",
-      "fieldName": "home",
-      "label": "Add home button"
-    }, {
-      "type": "boolean",
-      "fieldName": "zoom",
-      "label": "Add zoom buttons"
-    }, {
-      "type": "boolean",
-      "fieldName": "scalebar",
-      "label": "Add scalebar"
-    }, {
-      "type": "conditional",
-      "condition": false,
-      "fieldName": "basemapToggle",
-      "label": "Add basemap toggle button",
-      "items": [{
-        "type": "orgBasemaps",
-        "fieldName": "altBasemap",
-        "label": "Select alternate basemap"
-      }]
-    }, {
-      "type": "conditional",
-      "condition": false,
-      "fieldName": "legend",
-      "label": "Legend",
-      "items": [{
-          "type": "string",
-          "fieldName": "legendPosition",
-          "label": "Legend position",
-          "tooltip": "Configure the position of the legend tool",
-          "options": [{
-              "label": "Bottom left",
-              "value": "bottom-left"
-            },
-            {
-              "label": "Bottom right",
-              "value": "bottom-right"
-            },
-            {
-              "label": "Top left",
-              "value": "top-left"
-            },
-            {
-              "label": "Top right",
-              "value": "top-right"
-            }
-          ]
+    },
+    "hideMap": {
+      "defaultValue": false,
+      "express": false
+    }
+  },
+  "interactivity": {
+    "exploreNavigate": {
+      "explore": {
+        "scalebar": {
+          "defaultValue": true,
+          "express": false,
+          "scalebarPosition": {
+            "defaultValue": "bottom-right"
+          }
         },
-        {
-          "type": "boolean",
-          "fieldName": "legendOpenAtStart",
-          "label": "Open legend at start"
+        "mapZoom": {
+          "defaultValue": true,
+          "express": false,
+          "mapZoomPosition": {
+            "defaultValue": "top-right"
+          }
+        },
+        "home": {
+          "defaultValue": true,
+          "express": false,
+          "homePosition": {
+            "defaultValue": "top-right"
+          }
         }
-      ]
-    }]
-  }],
-  "values": {
-    "headerBackground": "#9081bc",
-    "headerColor": "#fff",
-    "buttonBackground": "#0079c1",
-    "buttonColor": "#fff",
-    "socialSharing": true,
-    "groupResultsByLayer": true,
-    "detailTitle": "Welcome!",
-    "detailContent": "Search for an address to learn more about the location and its surrounding area.</br>If you don't know the address, use one of these search methods: <ul><li>Click the search box and type in an address or choose <b>Use current location</b></li><li>Click within the map</li></ul></br> Results will include information about features of interest.",
-    "drawBuffer": true,
-    "home": true,
-    "basemapToggle": false,
-    "zoom": true,
-    "legend": false,
-    "legendOpenAtStart": false,
-    "legendPosition": "top-right",
-    "scalebar": false,
-    "hideLookupLayers": false,
-    "addMarker": true,
-    "includeAddressGraphic": true,
-    "includeAddressText": false,
-    "showResultCount": true,
-    "distance": 1,
-    "units": "kilometers",
-    "minDistance": 0,
-    "maxDistance": 2,
-    "precision": 2,
-    "labelInputsEnabled": true,
-    "rangeLabelInputsEnabled": true,
-    "includeDistance": true,
-    "showDirections": false,
-    "singleLocationPolygons": false
+      }
+    },
+    "modify": {
+      "modify": {
+        "mapPin": {
+          "defaultValue": true,
+          "express": "false"
+        },
+        "mapPinLabel": {
+          "express": false,
+          "defaultValue": false
+        },
+        "hideLayers": {
+          "defaultValue": false,
+          "express": false
+        },
+        "basemapToggle": {
+          "defaultValue": false,
+          "express": false,
+          "basemapTogglePosition": {
+            "defaultValue": "top-right"
+          },
+          "nextBasemap": {
+            "defaultValue": null
+          }
+        }
+      }
+    },
+    "share": {
+      "share": {
+        "defaultValue": true,
+        "express": false,
+        "shareIncludeSocial": {
+          "defaultValue": true,
+          "express": false
+        }
+      }
+    },
+    "results": {
+      "results": {
+        "lookupLayers": {
+          "express": true,
+          "config": {
+            "layerSelectionMode": "multiple",
+            "supportedLayerTypes": "*",
+            "supportedGeometryTypes": "*",
+            "supportsFieldSelection": false
+          }
+        },
+        "showDirections": {
+          "defaultValue": false,
+          "express": true,
+          "proxy": ["route"]
+        },
+        "includeDistance": {
+          "defaultValue": true,
+          "express": false
+        },
+        "groupResultsByLayer": {
+          "defaultValue": true,
+          "express": false
+        },
+        "singleLocationPolygons": {
+          "defaultValue": false,
+          "express": false
+        }
+      }
+    },
+    "search": {
+      "searchConfiguration": {
+        "express": true
+      }
+    },
+    "searchRadius": {
+      "searchRadius": {
+        "sliderRange": {
+          "express": true,
+          "config": {
+            "defaultMinVal": 0,
+            "defaultMaxVal": 2,
+            "includeDefaultValInput": true,
+            "defaultDefaultVal": 1
+          }
+        },
+        "searchUnits": {
+          "express": true
+        },
+        "inputsEnabled": {
+          "express": false
+        }
+      }
+    },
+    "resultsText": {
+      "resultsText": {
+        "noResultsMessage": {
+          "express": true,
+          "default": "No features found that meet the search criteria"
+        },
+        "resultsPanelPreText": {
+          "express": false
+        },
+        "resultsPanelPostText": {
+          "express": false
+        }
+      }
+    }
   }
 }

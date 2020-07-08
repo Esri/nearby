@@ -1,15 +1,14 @@
-import * as promiseUtils from 'esri/core/promiseUtils';
+import { debounce } from 'esri/core/promiseUtils';
 
 import Accordion, { AccordionProps } from './Accordion';
-/// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
-/// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-import { declared, property, subclass } from 'esri/core/accessorSupport/decorators';
+import { property, subclass } from 'esri/core/accessorSupport/decorators';
 
 import Feature from 'esri/widgets/Feature';
 import Handles from 'esri/core/Handles';
 import { tsx } from 'esri/widgets/support/widget';
 
 import esri = __esri;
+import { ApplicationConfig } from 'ApplicationBase/interfaces';
 
 const CSS = {
     base: 'accordion',
@@ -48,10 +47,17 @@ export interface FeatureResults {
 }
 interface GroupedAccordionProps extends AccordionProps {
     featureResults: FeatureResults[];
+    config: ApplicationConfig;
 }
 
 @subclass('app.GroupedAccordion')
-class GroupedAccordion extends declared(Accordion) {
+class GroupedAccordion extends (Accordion) {
+
+    // TODO UPDate to thise 
+    /*
+    resultsPanelPreText, resultsPanelPostText, showResultCount, showDirections,
+    interactiveResults, units, includeDistance
+    */
     //--------------------------------------------------------------------------
     //
     //  Properties
@@ -61,6 +67,7 @@ class GroupedAccordion extends declared(Accordion) {
     @property() selectedItem: esri.Graphic;
     @property() hoveredItem: esri.Feature;
     @property() zoom: boolean = true;
+    @property() config: ApplicationConfig;
     //--------------------------------------------------------------------------
     //
     // Variables
@@ -75,7 +82,7 @@ class GroupedAccordion extends declared(Accordion) {
     //
     //--------------------------------------------------------------------------
     constructor(props: GroupedAccordionProps) {
-        super();
+        super(props);
         if (props.featureResults) {
             props.featureResults.forEach((result) => {
                 this._featureCount += result.features && result.features.length;
@@ -172,6 +179,7 @@ class GroupedAccordion extends declared(Accordion) {
     _createFeature(node: HTMLElement) {
         const graphic = node['data-feature'];
         const distNode = document.createElement("span");
+
         node.appendChild(distNode);
         const container = document.createElement("div");
         node.id = `${graphic.layer.id}${graphic.attributes[graphic.layer.objectIdField]}`;
@@ -187,7 +195,7 @@ class GroupedAccordion extends declared(Accordion) {
 
         // Set the count and then update with title if we have one 
         if (graphic && graphic.attributes && graphic.attributes.lookupDistance && this.config.includeDistance) {
-            distNode.innerHTML = this.convertUnitText(graphic.attributes.lookupDistance, this.config.units);
+            distNode.innerHTML = this.convertUnitText(graphic.attributes.lookupDistance, this.config.searchUnits);
         }
 
         // Add click event if results are interactive 
@@ -197,7 +205,7 @@ class GroupedAccordion extends declared(Accordion) {
                 this.zoom = true;
                 this._selectAccordionSection(node.parentElement, graphic);
             });
-            node.addEventListener("mouseover", promiseUtils.debounce(() => {
+            node.addEventListener("mouseover", debounce(() => {
                 this.hoveredItem = feature;
             }));
         }

@@ -1,14 +1,12 @@
-/// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
-/// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-import { subclass, declared, property } from 'esri/core/accessorSupport/decorators';
+
+import { subclass, property } from 'esri/core/accessorSupport/decorators';
 import Widget from 'esri/widgets/Widget';
-import Accessor from 'esri/core/Accessor';
 import Handles from 'esri/core/Handles';
 import { tsx, renderable } from 'esri/widgets/support/widget';
-import * as geometryUtils from '../utilites/geometryUtils';
-import * as promiseUtils from 'esri/core/promiseUtils';
-import * as watchUtils from 'esri/core/watchUtils';
-import * as lookupLayerUtils from '../utilites/lookupLayerUtils';
+import { getDistances } from '../utilites/geometryUtils';
+import { resolve } from 'esri/core/promiseUtils';
+import { whenFalseOnce } from 'esri/core/watchUtils';
+import { hideLookuplayers, clearLookupLayers } from '../utilites/lookupLayerUtils';
 import FeatureFilter from 'esri/views/layers/support/FeatureFilter';
 import FeatureEffect from 'esri/views/layers/support/FeatureEffect';
 import GroupedAccordion, { FeatureResults } from './GroupedAccordion';
@@ -17,16 +15,19 @@ import Expand from 'esri/widgets/Expand';
 import MapPanel from './MapPanel';
 import Footer from './Footer';
 import i18n = require('dojo/i18n!../nls/resources');
-import { ApplicationConfig } from 'ApplicationBase/interfaces';
 import esri = __esri;
+import ConfigurationSettings = require('../ConfigurationSettings');
+import LookupGraphics = require('./LookupGraphics');
 
 type State = 'init' | 'loading' | 'ready';
 
 export interface DisplayLookupResultsProps extends esri.WidgetProperties {
 	view: esri.MapView;
-	lookupLayers: esri.FeatureLayer[];
-	config: ApplicationConfig;
+	lookupGraphics?: LookupGraphics;
+	lookupLayers?: esri.FeatureLayer[];
+	config: ConfigurationSettings;
 	mapPanel: MapPanel;
+	portal: __esri.Portal,
 	footer?: Footer;
 	directions?: esri.Directions;
 }
@@ -57,7 +58,7 @@ const CSS = {
 const expandSVG = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26"><polygon points="23.6 14.95 23.6 23.63 14.94 23.63 14.94 22.19 21.16 22.19 13.83 14.81 14.84 13.8 22.17 21.18 22.17 14.95 23.6 14.95" /><polygon points="11.06 3.83 11.06 2.4 2.4 2.4 2.4 11.07 3.83 11.07 3.83 4.84 11.27 12.41 12.28 11.4 4.84 3.83 11.06 3.83" /><path d="M24,1a1,1,0,0,1,1,1V24a1,1,0,0,1-1,1H2a1,1,0,0,1-1-1V2A1,1,0,0,1,2,1H24m0-1H2A2,2,0,0,0,0,2V24a2,2,0,0,0,2,2H24a2,2,0,0,0,2-2V2a2,2,0,0,0-2-2Z" /></svg>;
 const collapseSVG = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26"><polygon points="14.88 23.48 14.88 14.81 23.54 14.81 23.54 16.25 17.32 16.25 25.47 24.41 24.46 25.42 16.31 17.26 16.31 23.48 14.88 23.48" /><polygon points="2.75 9.97 2.75 11.4 11.4 11.4 11.4 2.73 9.97 2.73 9.97 8.96 1.82 0.8 0.81 1.81 8.96 9.97 2.75 9.97" /><path d="M24,1a1,1,0,0,1,1,1V24a1,1,0,0,1-1,1H2a1,1,0,0,1-1-1V2A1,1,0,0,1,2,1H24m0-1H2A2,2,0,0,0,0,2V24a2,2,0,0,0,2,2H24a2,2,0,0,0,2-2V2a2,2,0,0,0-2-2Z" /></svg>;
 @subclass('app.DisplayLookupResults')
-class DisplayLookupResults extends declared(Widget) {
+class DisplayLookupResults extends (Widget) {
 	//--------------------------------------------------------------------------
 	//
 	//  Properties
@@ -65,19 +66,27 @@ class DisplayLookupResults extends declared(Widget) {
 	//--------------------------------------------------------------------------
 	@property()
 	accordion: GroupedAccordion;
+
 	@property()
 	location: esri.Graphic;
-	@property() view: esri.MapView;
-	@property() config: ApplicationConfig;
+
+	@property()
+	view: esri.MapView;
+
+	@property() lookupGraphics = null;
+	@property()
+	config: ConfigurationSettings;
 
 	@property() mapPanel: MapPanel;
 	@property() footer: Footer;
 	@property()
 	empty: boolean = true;
-	@property() distance: number;
 	@property() lookupLayers: esri.FeatureLayer[] = null;
 	@property() expand: esri.Expand[] = [];
 	@property() directions: esri.Directions = null;
+
+	@property()
+	portal: __esri.Portal;
 	@property()
 	@renderable()
 	state: State = 'init';
@@ -90,7 +99,6 @@ class DisplayLookupResults extends declared(Widget) {
 
 	_viewPoint: esri.Viewpoint = null;
 	_accordion: GroupedAccordion = null;
-	_bufferGraphic: esri.Graphic = null;
 	_handles: Handles = new Handles();
 	_toggle: boolean = false;
 
@@ -100,9 +108,7 @@ class DisplayLookupResults extends declared(Widget) {
 	//
 	//--------------------------------------------------------------------------
 	constructor(props: DisplayLookupResultsProps) {
-		super();
-		const { distance } = props.config;
-		this.distance = distance || 0;
+		super(props);
 	}
 
 	render() {
@@ -149,11 +155,11 @@ class DisplayLookupResults extends declared(Widget) {
 	}
 
 	_addDetailAccordion(container: HTMLElement) {
-		const { _featureResults, config, view } = this;
+		const { _featureResults, view } = this;
 		const eventHandler = this._handleActionItem.bind(this);
 		let actionItems: ActionButton[] = [];
-		if (config.showDirections) { // check status
-			if (this.directions && this.directions.viewModel && this.directions.viewModel.state && this.directions.viewModel.state !== "error") {
+		if (this.config.showDirections) { // check status
+			if (this?.directions?.viewModel?.state === "ready") {
 				actionItems.push({
 					icon: 'icon-ui-map-pin',
 					id: 'directions',
@@ -165,7 +171,7 @@ class DisplayLookupResults extends declared(Widget) {
 		this.accordion = new GroupedAccordion({
 			actionBarItems: actionItems,
 			featureResults: _featureResults,
-			config,
+			config: this.config,
 			view,
 			container
 		});
@@ -216,7 +222,7 @@ class DisplayLookupResults extends declared(Widget) {
 			this._clearDirections();
 			this.directions.viewModel.stops.addMany([start, stop]);
 			await this.directions.viewModel.getDirections() as any;
-			if (this.config.noMap) {
+			if (this.config.hideMap) {
 				const results = await this.directions.getDirections();
 				// add directions widget to new popup and open 
 				const printPage = document.getElementById("printPanel");
@@ -273,17 +279,18 @@ class DisplayLookupResults extends declared(Widget) {
 		}
 		return returnGraphic;
 	}
-	async queryFeatures(location: esri.Graphic, distance: number) {
+	async queryFeatures(location: esri.Graphic) {
 		this.location = location;
-		this.distance = distance;
+		this.lookupGraphics.graphic = location;
 		this.state = 'loading';
 		const promises = [];
 		if (!location) {
 			this.state = 'init';
 			this._featureResults = [];
-			promiseUtils.resolve();
+			resolve();
 		} else {
-			this._addBuffer(location.geometry);
+
+			this.lookupGraphics.addGraphics();
 			this.lookupLayers.forEach((layer) => {
 				promises.push(this._queryFeatureLayers(layer, location.geometry));
 			});
@@ -336,7 +343,7 @@ class DisplayLookupResults extends declared(Widget) {
 		// Perform query first time layer is done updating	
 
 		if (layerView.updating) {
-			await watchUtils.whenFalseOnce(layerView, "updating");
+			await whenFalseOnce(layerView, "updating");
 		}
 		const queryLayer = this._getQueryLayer(layerView);
 		const query: esri.Query = this._createQuery(layerView, location);
@@ -350,7 +357,7 @@ class DisplayLookupResults extends declared(Widget) {
 				this._applyLayerEffectAndFilter(layerView, query);
 			}
 
-			return promiseUtils.resolve({
+			return resolve({
 				features: results.features,
 				title: layer.get("title") ? layer.get("title") : null,
 				id: layer.get("id") ? layer.get("id") : null
@@ -359,7 +366,7 @@ class DisplayLookupResults extends declared(Widget) {
 
 	}
 	private _createQuery(layer: esri.FeatureLayerView, location: esri.Geometry): esri.Query {
-		const { relationship, units, singleLocationPolygons } = this.config;
+		const { relationship, searchUnits, singleLocationPolygons } = this.config;
 		const type = layer.layer.geometryType;
 		// we need return geom since we have to get distances and zoom to selected 
 		const query = layer.layer.createQuery();
@@ -368,8 +375,8 @@ class DisplayLookupResults extends declared(Widget) {
 
 		// Always set with points and lines but also set for 
 		// polygons that don't have singleLocationPolygons set to true
-		query.distance = type === "polygon" && singleLocationPolygons ? 0 : this.distance;
-		query.units = units;
+		query.distance = type === "polygon" && singleLocationPolygons ? 0 : this.config.sliderRange.default;
+		query.units = searchUnits;
 		query.spatialRelationship = relationship;
 		return query;
 	}
@@ -393,7 +400,7 @@ class DisplayLookupResults extends declared(Widget) {
 				});
 			}
 		}
-		if (this.config.noMap) {
+		if (this.config.hideMap) {
 			const printPage = document.getElementById("printPanel");
 			printPage.classList.add("hide");
 
@@ -405,7 +412,7 @@ class DisplayLookupResults extends declared(Widget) {
 		const unsupportedIds = ["4742", "8042", "8086", "4757"];
 		const { view } = this;
 
-		if (this.config.noMap || this.config.hideLookupLayers) {
+		if (this.config.hideMap || this.config.hideLayers) {
 			return layerView.layer;
 		}
 		if (!layerView.visible) {
@@ -415,22 +422,22 @@ class DisplayLookupResults extends declared(Widget) {
 			return layerView.layer;
 		} else if (view && view.spatialReference && (!view.spatialReference.isGeographic && !view.spatialReference.isWGS84 && !view.spatialReference.isWebMercator)) {
 			return layerView.layer;
-		} /*else if (view && view.spatialReference && view.spatialReference.wkid && unsupportedIds.indexOf(view.spatialReference.wkid.toString()) !== -1) {
+		} else if (view && view.spatialReference && view.spatialReference.wkid && unsupportedIds.indexOf(view.spatialReference.wkid.toString()) !== -1) {
 			return layerView.layer;
-		}*/ else {
-			return layerView;
+		} else {
+			return layerView.layer;
 		}
 	}
 	private _applyLayerEffectAndFilter(layerView: esri.FeatureLayerView, query) {
 
-		const { geometry, units, spatialRelationship, where, distance } = query;
+		const { geometry, units, spatialRelationship, where } = query;
 		const props: __esri.FeatureFilterProperties = {
 			geometry,
 			spatialRelationship,
 			where
 		};
-		if (this.distance && distance) {
-			props.distance = this.distance;
+		if (this.config?.sliderRange?.default) {
+			props.distance = this.config.sliderRange.default;
 			if (units) {
 				props.units = units;
 			}
@@ -442,42 +449,14 @@ class DisplayLookupResults extends declared(Widget) {
 
 		layerView.effect = effect;
 	}
-	private async _addBuffer(geometry) {
-		const buffer = this._createBuffer(geometry);
-
-		if (this.config.drawBuffer) {
-			const theme = await geometryUtils.getBasemapTheme(this.view);
-			// Let's create the buffer but only add it to the  map if drawBuffer is enabled. 
-			if (this._bufferGraphic) {
-				this.view.graphics.remove(this._bufferGraphic);
-			}
-			this._bufferGraphic = geometryUtils.createBufferGraphic(buffer as esri.Polygon, theme, this.config);
-			this.view.graphics.add(this._bufferGraphic);
-		}
-		await this.view.goTo(buffer);
-	}
-	private _createBuffer(location: esri.Geometry): esri.Geometry {
-
-		const { portal, units } = this.config;
-
-		const buffer = geometryUtils.bufferGeometry({
-			location,
-			portal,
-			distance: this.distance,
-			unit: units
-		});
-
-		return buffer as esri.Geometry;
-	}
 	_sortFeatures(features) {
-		const { includeDistance, units, portal } = this.config;
-		if (includeDistance && this.location && this.distance) {
+		const { includeDistance, searchUnits, sliderRange } = this.config;
+		if (includeDistance && this.location && sliderRange) {
 			// add distance val to the features and sort array by distance
-			geometryUtils.getDistances({
+			getDistances({
 				location: this.location.geometry,
-				portal,
-				distance: this.distance || 0,
-				unit: units,
+				distance: sliderRange?.default,
+				unit: searchUnits,
 				features
 			});
 
@@ -489,18 +468,17 @@ class DisplayLookupResults extends declared(Widget) {
 			});
 		}
 	}
-	clearResults() {
+	public clearResults() {
 		this._toggle = false;
 		this.empty = true;
-		if (this._bufferGraphic && this.view) {
-			this.view.graphics.remove(this._bufferGraphic);
-		}
+
+		this.lookupGraphics.clearGraphics();
 		this.accordion && this.accordion.clear();
 		this._featureResults = null;
-		if (this.config.hideLookupLayers) {
-			lookupLayerUtils.hideLookuplayers(this.lookupLayers, this.view);
+		if (this.config.hideLayers) {
+			hideLookuplayers(this.lookupLayers, this.view);
 		} else {
-			lookupLayerUtils.clearLookupLayers(this.lookupLayers, this.view);
+			clearLookupLayers(this.lookupLayers, this.view);
 		}
 
 		this._clearDirections();

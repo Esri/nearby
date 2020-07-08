@@ -1,14 +1,16 @@
-/// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
-/// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-import { subclass, declared, property } from 'esri/core/accessorSupport/decorators';
+
+import { subclass, property } from 'esri/core/accessorSupport/decorators';
 import Widget from 'esri/widgets/Widget';
-import Accessor from 'esri/core/Accessor';
 import DetailPanel from './DetailPanel';
 import i18n = require('dojo/i18n!../nls/resources');
-import { tsx } from 'esri/widgets/support/widget';
+import { tsx, renderable } from 'esri/widgets/support/widget';
+import { setPageTitle } from 'ApplicationBase/support/domHelper';
+import { init } from "esri/core/watchUtils";
 
+import ConfigurationSettings = require('../ConfigurationSettings');
 import esri = __esri;
-import { ApplicationConfig } from 'ApplicationBase/interfaces';
+
+
 
 const CSS = {
 	theme: 'app-header',
@@ -20,24 +22,26 @@ const CSS = {
 		topNavLink: 'top-nav-link',
 		topNav: 'top-nav',
 		topNavTitle: 'top-nav-title',
-		ellipsis: 'text-ellipsis'
+		ellipsis: 'text-fade'
 	}
 };
 
 interface HeaderProps extends esri.WidgetProperties {
-	config: ApplicationConfig,
+	config: ConfigurationSettings,
 	detailPanel: DetailPanel
 }
 
 @subclass('app.Header')
-class Header extends declared(Widget) {
+class Header extends (Widget) {
 	//--------------------------------------------------------------------------
 	//
 	//  Properties
 	//
 	//--------------------------------------------------------------------------
 
-	@property() config: ApplicationConfig;
+	@property()
+	@renderable(["title", "titleLink"])
+	config: ConfigurationSettings;
 	@property() detailPanel: DetailPanel;
 	//--------------------------------------------------------------------------
 	//
@@ -45,7 +49,12 @@ class Header extends declared(Widget) {
 	//
 	//--------------------------------------------------------------------------
 	constructor(props: HeaderProps) {
-		super();
+		super(props);
+	}
+	postInitialize() {
+		const handle = init(this, "config.title", this._onTitleUpdate);
+
+		this.own(handle);
 	}
 	render() {
 		const { title, titleLink } = this.config;
@@ -65,9 +74,10 @@ class Header extends declared(Widget) {
 		return (
 			<header class={this.classes(CSS.calciteStyles.topNav, CSS.theme)}>
 				<div class={this.classes(CSS.calciteStyles.fade)}>
-					<h1 class={this.classes(CSS.calciteStyles.topNavTitle, CSS.calciteStyles.ellipsis)}>{titleNode}</h1>
-					{infoButton}
+					<h1 title={title} class={this.classes(CSS.calciteStyles.topNavTitle, CSS.calciteStyles.ellipsis)}>{titleNode}</h1>
 				</div>
+				{infoButton}
+
 			</header>
 		);
 	}
@@ -83,5 +93,9 @@ class Header extends declared(Widget) {
 			this.detailPanel.showPanel();
 		}
 	}
+
+	private _onTitleUpdate() {
+		setPageTitle(this.config.title);
+	};
 }
 export = Header;

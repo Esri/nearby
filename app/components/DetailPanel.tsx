@@ -1,15 +1,15 @@
-/// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
-/// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
-import { subclass, declared, property } from 'esri/core/accessorSupport/decorators';
+
+import { subclass, property } from 'esri/core/accessorSupport/decorators';
 import Widget from 'esri/widgets/Widget';
 import Share from '../components/Share/Share';
 import ShareFeatures from '../components/Share/Share/ShareFeatures';
-import watchUtils = require('esri/core/watchUtils');
+import { whenOnce } from 'esri/core/watchUtils';
 import Handles = require('esri/core/Handles');
-import { tsx } from 'esri/widgets/support/widget';
+import { tsx, renderable } from 'esri/widgets/support/widget';
 import i18n = require('dojo/i18n!../nls/resources');
 
 import esri = __esri;
+import ConfigurationSettings = require('../ConfigurationSettings');
 type State = 'ready' | 'loading';
 
 const CSS = {
@@ -33,28 +33,26 @@ const CSS = {
 };
 
 export interface DetailPanelProps extends esri.WidgetProperties {
-	title: string;
-	content: string;
-	sharing: boolean;
+	config: ConfigurationSettings;
 	view: esri.MapView;
 }
 
 @subclass('app.DetailPanel')
-class DetailPanel extends declared(Widget) {
+class DetailPanel extends (Widget) {
 	//--------------------------------------------------------------------------
 	//
 	//  Properties
 	//
 	//--------------------------------------------------------------------------
-	@property() title: string;
-
-	@property() content: string;
-	@property() sharing: boolean;
+	@property()
+	@renderable(["introductionTitle", "introductionContent", "shareIncludeSocial"])
+	config: ConfigurationSettings = null;
 	@property() shareWidget: Share = null;
 	@property() view: esri.MapView = null;
 
 	private _handles: Handles = new Handles();
-
+	private _resultsPanel: HTMLElement = document.getElementById("resultsPanel");
+	private _filterPanel: HTMLElement = document.getElementById("filterPanel");
 	//----------------------------------
 	//
 	//  state - readOnly
@@ -70,30 +68,29 @@ class DetailPanel extends declared(Widget) {
 	}
 
 	constructor(props: DetailPanelProps) {
-		super();
+		super(props);
 	}
 	initialize() {
-		if (this.sharing) {
-			const setupShare = 'setup-share';
-			this._handles.add(
-				watchUtils.whenOnce(this, 'view.ready', () => {
-					const shareFeatures = new ShareFeatures({
-						copyToClipboard: true,
-						embedMap: false
-					});
 
-					this.shareWidget = new Share({
-						view: this.view,
-						shareFeatures,
-						container: document.createElement('div'),
-						isDefault: true
-					});
+		const setupShare = 'setup-share';
+		this._handles.add(
+			whenOnce(this, 'view.ready', () => {
+				const shareFeatures = new ShareFeatures({
+					copyToClipboard: true,
+					embedMap: false
+				});
 
-					this._handles.remove(setupShare);
-				}),
-				setupShare
-			);
-		}
+				this.shareWidget = new Share({
+					view: this.view,
+					shareFeatures,
+					container: document.createElement('div'),
+					isDefault: true
+				});
+
+				this._handles.remove(setupShare);
+			}),
+			setupShare
+		);
 	}
 	destroy() {
 		this._handles.removeAll();
@@ -101,8 +98,11 @@ class DetailPanel extends declared(Widget) {
 	}
 
 	render() {
+		const { shareIncludeSocial } = this.config;
+		const title = this._getTitle();
+		const content = this._getContent();
 		const socialShare =
-			this.sharing && this.shareWidget ? (
+			shareIncludeSocial && this.shareWidget ? (
 				<div
 					bind={this.shareWidget.container}
 					afterCreate={this._attachToNode}
@@ -125,8 +125,8 @@ class DetailPanel extends declared(Widget) {
 				>
 					<svg class={this.classes(CSS.svgIcon)} xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M18.404 16l9.9 9.9-2.404 2.404-9.9-9.9-9.9 9.9L3.696 25.9l9.9-9.9-9.9-9.898L6.1 3.698l9.9 9.899 9.9-9.9 2.404 2.406-9.9 9.898z" /></svg>
 				</button>
-				<h3 class={this.classes(CSS.detailsTitle)}>{this.title}</h3>
-				<p class={this.classes(CSS.detailsContent)} innerHTML={this.content} />
+				<h3 class={this.classes(CSS.detailsTitle)}>{title}</h3>
+				<p class={this.classes(CSS.detailsContent)} innerHTML={content} />
 				{socialShare}
 			</div>
 		);
@@ -134,16 +134,48 @@ class DetailPanel extends declared(Widget) {
 	public hidePanel() {
 		const container = this.container as HTMLElement;
 		container.classList.add("hide");
+		//const filter = document.getElementById("filterPanel");
+		//const results = document.getElementById("resultsPanel");
+		this._resultsPanel.classList.remove("hide");
+		this._filterPanel.classList.remove("hide");
+
 	}
 	public showPanel() {
 		// Check local storage 
 		const container = this.container as HTMLElement;
 		container.classList.remove("hide");
+		// If it's info-triggered hide the filter panel 
+		if (container.classList.contains("info-triggered")) {
+			//const results = document.getElementById("resultsPanel");
+
+			//const filter = document.getElementById("filterPanel");
+			this._filterPanel.classList.add("hide")
+			this._resultsPanel.classList.add("hide");
+		}
+
 	}
 
 	_attachToNode(this: HTMLElement, node: HTMLElement): void {
 		const content: HTMLElement = this;
 		node.appendChild(content);
+	}
+
+	_getTitle() {
+		let title = this.config.introductionTitle;
+		if (!title) {
+			// no title specified use default? 
+			title = i18n.onboarding.title;
+		}
+
+		return title;
+	}
+	_getContent() {
+		let content = this.config.introductionContent;
+
+		if (!content) {
+			content = i18n.onboarding.content;
+		}
+		return content;
 	}
 
 }

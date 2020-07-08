@@ -20,7 +20,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "../components/Share/Share", "../components/Share/Share/ShareFeatures", "esri/core/watchUtils", "esri/core/Handles", "esri/widgets/support/widget", "dojo/i18n!../nls/resources"], function (require, exports, __extends, __decorate, decorators_1, Widget_1, Share_1, ShareFeatures_1, watchUtils, Handles, widget_1, i18n) {
+define(["require", "exports", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "../components/Share/Share", "../components/Share/Share/ShareFeatures", "esri/core/watchUtils", "esri/core/Handles", "esri/widgets/support/widget", "dojo/i18n!../nls/resources"], function (require, exports, decorators_1, Widget_1, Share_1, ShareFeatures_1, watchUtils_1, Handles, widget_1, i18n) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     Widget_1 = __importDefault(Widget_1);
@@ -48,10 +48,18 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
     var DetailPanel = /** @class */ (function (_super) {
         __extends(DetailPanel, _super);
         function DetailPanel(props) {
-            var _this = _super.call(this) || this;
+            var _this = _super.call(this, props) || this;
+            //--------------------------------------------------------------------------
+            //
+            //  Properties
+            //
+            //--------------------------------------------------------------------------
+            _this.config = null;
             _this.shareWidget = null;
             _this.view = null;
             _this._handles = new Handles();
+            _this._resultsPanel = document.getElementById("resultsPanel");
+            _this._filterPanel = document.getElementById("filterPanel");
             return _this;
         }
         Object.defineProperty(DetailPanel.prototype, "state", {
@@ -64,64 +72,86 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 var ready = this.get('view.ready');
                 return ready ? 'ready' : 'loading';
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         DetailPanel.prototype.initialize = function () {
             var _this = this;
-            if (this.sharing) {
-                var setupShare_1 = 'setup-share';
-                this._handles.add(watchUtils.whenOnce(this, 'view.ready', function () {
-                    var shareFeatures = new ShareFeatures_1.default({
-                        copyToClipboard: true,
-                        embedMap: false
-                    });
-                    _this.shareWidget = new Share_1.default({
-                        view: _this.view,
-                        shareFeatures: shareFeatures,
-                        container: document.createElement('div'),
-                        isDefault: true
-                    });
-                    _this._handles.remove(setupShare_1);
-                }), setupShare_1);
-            }
+            var setupShare = 'setup-share';
+            this._handles.add(watchUtils_1.whenOnce(this, 'view.ready', function () {
+                var shareFeatures = new ShareFeatures_1.default({
+                    copyToClipboard: true,
+                    embedMap: false
+                });
+                _this.shareWidget = new Share_1.default({
+                    view: _this.view,
+                    shareFeatures: shareFeatures,
+                    container: document.createElement('div'),
+                    isDefault: true
+                });
+                _this._handles.remove(setupShare);
+            }), setupShare);
         };
         DetailPanel.prototype.destroy = function () {
             this._handles.removeAll();
             this._handles = null;
         };
         DetailPanel.prototype.render = function () {
-            var socialShare = this.sharing && this.shareWidget ? (widget_1.tsx("div", { bind: this.shareWidget.container, afterCreate: this._attachToNode, class: this.classes(CSS.calciteStyles.phoneHide) })) : null;
+            var shareIncludeSocial = this.config.shareIncludeSocial;
+            var title = this._getTitle();
+            var content = this._getContent();
+            var socialShare = shareIncludeSocial && this.shareWidget ? (widget_1.tsx("div", { bind: this.shareWidget.container, afterCreate: this._attachToNode, class: this.classes(CSS.calciteStyles.phoneHide) })) : null;
             return (widget_1.tsx("div", { bind: this, class: this.classes(CSS.calciteStyles.panel, CSS.calciteStyles.panelNoPadding) },
                 widget_1.tsx("button", { bind: this, "aria-label": i18n.tools.close, title: i18n.tools.close, onclick: this.hidePanel, class: this.classes(CSS.details, CSS.calciteStyles.right, CSS.calciteStyles.btn, CSS.calciteStyles.btnTransparent) },
                     widget_1.tsx("svg", { class: this.classes(CSS.svgIcon), xmlns: "http://www.w3.org/2000/svg", width: "32", height: "32", viewBox: "0 0 32 32" },
                         widget_1.tsx("path", { d: "M18.404 16l9.9 9.9-2.404 2.404-9.9-9.9-9.9 9.9L3.696 25.9l9.9-9.9-9.9-9.898L6.1 3.698l9.9 9.899 9.9-9.9 2.404 2.406-9.9 9.898z" }))),
-                widget_1.tsx("h3", { class: this.classes(CSS.detailsTitle) }, this.title),
-                widget_1.tsx("p", { class: this.classes(CSS.detailsContent), innerHTML: this.content }),
+                widget_1.tsx("h3", { class: this.classes(CSS.detailsTitle) }, title),
+                widget_1.tsx("p", { class: this.classes(CSS.detailsContent), innerHTML: content }),
                 socialShare));
         };
         DetailPanel.prototype.hidePanel = function () {
             var container = this.container;
             container.classList.add("hide");
+            //const filter = document.getElementById("filterPanel");
+            //const results = document.getElementById("resultsPanel");
+            this._resultsPanel.classList.remove("hide");
+            this._filterPanel.classList.remove("hide");
         };
         DetailPanel.prototype.showPanel = function () {
             // Check local storage 
             var container = this.container;
             container.classList.remove("hide");
+            // If it's info-triggered hide the filter panel 
+            if (container.classList.contains("info-triggered")) {
+                //const results = document.getElementById("resultsPanel");
+                //const filter = document.getElementById("filterPanel");
+                this._filterPanel.classList.add("hide");
+                this._resultsPanel.classList.add("hide");
+            }
         };
         DetailPanel.prototype._attachToNode = function (node) {
             var content = this;
             node.appendChild(content);
         };
+        DetailPanel.prototype._getTitle = function () {
+            var title = this.config.introductionTitle;
+            if (!title) {
+                // no title specified use default? 
+                title = i18n.onboarding.title;
+            }
+            return title;
+        };
+        DetailPanel.prototype._getContent = function () {
+            var content = this.config.introductionContent;
+            if (!content) {
+                content = i18n.onboarding.content;
+            }
+            return content;
+        };
         __decorate([
-            decorators_1.property()
-        ], DetailPanel.prototype, "title", void 0);
-        __decorate([
-            decorators_1.property()
-        ], DetailPanel.prototype, "content", void 0);
-        __decorate([
-            decorators_1.property()
-        ], DetailPanel.prototype, "sharing", void 0);
+            decorators_1.property(),
+            widget_1.renderable(["introductionTitle", "introductionContent", "shareIncludeSocial"])
+        ], DetailPanel.prototype, "config", void 0);
         __decorate([
             decorators_1.property()
         ], DetailPanel.prototype, "shareWidget", void 0);
@@ -138,7 +168,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             decorators_1.subclass('app.DetailPanel')
         ], DetailPanel);
         return DetailPanel;
-    }(decorators_1.declared(Widget_1.default)));
+    }((Widget_1.default)));
     exports.default = DetailPanel;
 });
 //# sourceMappingURL=DetailPanel.js.map

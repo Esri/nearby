@@ -20,18 +20,16 @@
   limitations under the License.​
 */
 import Graphic from 'esri/Graphic';
-import Color from 'esri/Color';
-import * as colorUtils from 'esri/views/support/colorUtils';
+import { getBackgroundColorTheme } from 'esri/views/support/colorUtils';
 import SpatialReference from 'esri/geometry/SpatialReference';
-import geometryEngine from 'esri/geometry/geometryEngine';
-import esri = __esri;
+import { geodesicBuffer, buffer, geodesicLength, distance } from 'esri/geometry/geometryEngine';
 import { Polyline } from 'esri/geometry';
+import esri = __esri;
 
 interface BufferParams {
 	location: esri.Geometry;
-	portal: esri.Portal;
 	distance: number;
-	unit: string;
+	unit: __esri.BufferParameters["unit"];
 }
 interface DistanceParams extends BufferParams {
 	features: Graphic[];
@@ -42,7 +40,7 @@ export async function getDistances(params: DistanceParams) {
 	let geodesic = false;
 	if (location && location.type && location.type === "point") {
 
-		const sr: SpatialReference = (location && location.spatialReference) ? location.spatialReference : null;
+		const sr: SpatialReference = (location?.spatialReference) ? location.spatialReference : null;
 		const feature = params.features && params.features.length && params.features.length > 0 ? params.features[0] : null;
 		const sr2: SpatialReference = feature.geometry && feature.geometry.spatialReference ? feature.geometry.spatialReference : null;
 		const type = (feature.geometry && feature.geometry.type) ? feature.geometry.type : null;
@@ -57,7 +55,7 @@ export async function getDistances(params: DistanceParams) {
 	}
 
 	params.features.forEach(feature => {
-		let distance;
+		let measureDistance;
 		if (geodesic) {
 			const pt1 = location as esri.Point;
 			const pt2 = feature.geometry as esri.Point;
@@ -67,20 +65,20 @@ export async function getDistances(params: DistanceParams) {
 				spatialReference: pt1.spatialReference
 			});
 
-			distance = geometryEngine.geodesicLength(polyLine, unit);
+			measureDistance = geodesicLength(polyLine, unit);
 
 		}
 		else {
-			distance = geometryEngine.distance(location, feature.geometry, unit);
+			measureDistance = distance(location, feature.geometry, unit);
 		}
 
 		if (feature && feature.attributes) {
-			feature.attributes.lookupDistance = distance !== null ? distance.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
+			feature.attributes.lookupDistance = measureDistance !== null ? measureDistance.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
 		}
 	});
 }
 export async function getBasemapTheme(view: esri.MapView): Promise<string> {
-	return await colorUtils.getBackgroundColorTheme(view);
+	return await getBackgroundColorTheme(view);
 }
 export function bufferGeometry(params: BufferParams) {
 	const { location, distance, unit } = params;
@@ -90,34 +88,10 @@ export function bufferGeometry(params: BufferParams) {
 			wkid: 102100
 		});
 	if (spatialReference.isWGS84 || spatialReference.isWebMercator) {
-		return geometryEngine.geodesicBuffer(location, distance, unit);
+		return geodesicBuffer(location, distance, unit);
 	} else {
-		return geometryEngine.buffer(location, distance, unit);
+		return buffer(location, distance, unit);
 	}
 }
 
-export function createBufferGraphic(geometry: esri.Polygon, theme, config) {
-	// determine theme and apply color based on that 
-	const { lightColor, darkColor } = config;
-	if (!theme) theme = "light";
-	const hexVal = theme === "light" ? lightColor : darkColor;
 
-	const color = new Color(hexVal);
-
-	const fillColor = color.clone();
-	fillColor.a = 0.08;
-
-	const fillSymbol = {
-		type: 'simple-fill',
-		color: theme === "light" ? fillColor : null,
-		outline: {
-			color
-		}
-	};
-
-	const bufferGraphic = new Graphic({
-		geometry,
-		symbol: fillSymbol
-	});
-	return bufferGraphic;
-}
