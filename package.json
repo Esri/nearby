@@ -1,11 +1,11 @@
 {
-  "name": "3d-inset",
+  "name": "nearby",
   "version": "0.0.1",
-  "description": "3D app with 2D inset map",
+  "description": "Find nearby locations",
   "author": "Esri",
   "homepage": "https://github.com/Esri/configurable-app-examples-4x-js",
   "license": "SEE LICENSE IN license.txt",
-  "main": "webmap-ts/index.html",
+  "main": "index.html",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Esri/configurable-app-examples-4x-js.git"
@@ -19,17 +19,16 @@
     "TypeScript"
   ],
   "devDependencies": {
-    "@esri/application-base-js": "^0.0.2",
-    "@types/arcgis-js-api": "^4.14.0",
+    "@types/arcgis-js-api": "^4.20.0",
     "autoprefixer": "^6.3.6",
-    "calcite-web": "github:Esri/calcite-web#v1.2.5",
     "cpx": "^1.5.0",
     "dojo-typings": "^1.11.9",
     "node-sass": "^4.13.1",
     "npm-run-all": "^4.1.3",
     "postcss-normalize-charset": "^1.1.0",
+    "tslib": "^2.0.3",
     "tslint": "^5.20.1",
-    "typescript": "^3.7.5",
+    "typescript": "^3.9.9",
     "workbox-build": "^4.3.1"
   },
   "scripts": {
@@ -39,9 +38,5 @@
     "build:sass": "./node_modules/.bin/node-sass styles/main.scss styles/main.css",
     "watch:sass": "./node_modules/.bin/node-sass --watch styles/main.scss styles/main.css",
     "deploy": "npm run build:sass & npm run build:ts"
-  },
-  "dependencies": {
-    "@esri/configurable-app-components": "^1.1.0",
-    "@esri/telemetry": "^1.5.1"
   }
 }

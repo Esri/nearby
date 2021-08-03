@@ -2,11 +2,10 @@
 import { subclass, property } from 'esri/core/accessorSupport/decorators';
 import Widget from 'esri/widgets/Widget';
 import { displayError } from '../utilites/errorUtils';
-import i18n = require('dojo/i18n!../nls/resources');
-import { tsx, renderable } from 'esri/widgets/support/widget';
-import { ApplicationConfig } from 'ApplicationBase/interfaces';
-import ApplicationBase from 'ApplicationBase/ApplicationBase';
-import { createMapFromItem, createView, getConfigViewProperties } from 'ApplicationBase/support/itemUtils';
+import { tsx } from 'esri/widgets/support/widget';
+import { ApplicationConfig } from 'TemplatesCommonLib/interfaces/applicationBase';
+import ApplicationBase from 'TemplatesCommonLib/baseClasses/ApplicationBase';
+import { createMapFromItem, createView, getConfigViewProperties } from 'TemplatesCommonLib/baseClasses/support/itemUtils';
 
 import esri = __esri;
 
@@ -23,28 +22,18 @@ const CSS = {
 	appButton: 'app-button',
 
 	calciteStyles: {
-		alert: 'alert',
-		active: 'is-active',
-		alertRed: 'alert-red',
-		alertGreen: 'alert-green',
-		alertClose: 'alert-close',
-		topNav: 'top-nav',
-		topNavTitle: 'top-nav-title',
-		column14: 'column-14',
 		leader: 'leader-0',
 		trailer: 'trailer-0',
 		paddingLeft: 'padding-left-0',
 		paddingRight: 'padding-right-0',
-		button: 'btn',
-		buttonFill: 'btn-fill',
 		right: 'right',
 		panel: 'panel',
-		iconDesc: 'icon-ui-description'
 	}
 };
 
 interface MapPanelProps extends esri.WidgetProperties {
 	base: ApplicationBase;
+	config: ApplicationConfig;
 	item: esri.PortalItem;
 	mainMapAccessoryClassName?: string;
 	selectedItemTitle?: string;
@@ -66,11 +55,10 @@ class MapPanel extends (Widget) {
 
 	@property() selectedItemTitle: string = null;
 
-	@renderable()
 	@property()
 	isMobileView: boolean = false;
 
-	@renderable()
+
 	@property()
 	message: string;
 
@@ -88,10 +76,13 @@ class MapPanel extends (Widget) {
 	//--------------------------------------------------------------------------
 	constructor(props: MapPanelProps) {
 		super(props);
-		const { config } = props.base;
+		const { config } = props;
 		this.config = config;
 	}
+
 	render() {
+		const { theme, panelSize } = this.config;
+		let themeClass = theme === "dark" ? "calcite-theme-dark" : "calcite-theme-light";
 		const allClasses = [
 			CSS.calciteStyles.paddingRight,
 			CSS.calciteStyles.paddingLeft,
@@ -99,39 +90,34 @@ class MapPanel extends (Widget) {
 			CSS.calciteStyles.leader,
 			CSS.calciteStyles.trailer
 		];
-		const mainMapClasses = [CSS.calciteStyles.column14];
+		let panelClassNum = 14;
+		if (panelSize === "s") {
+			panelClassNum = 18;
+		} else if (panelSize === "l") {
+			panelClassNum = 12;
+		}
+
+		const mainMapClasses = [`column-${panelClassNum}`];
 		const miniMapClasses = [CSS.miniMap.panel, CSS.calciteStyles.panel];
 		const mapPositionClasses = this.isMobileView
 			? this.classes(...allClasses, ...miniMapClasses)
 			: this.classes(...mainMapClasses, ...allClasses);
 		const mapTabletClass = this.isMobileView ? this.classes(CSS.tabletShow) : null;
-
 		const alertMessage =
 			this.isMobileView && this.message ? (
-				<div
-					key="mobile-message"
-					class={
-						this.isMobileView && this.message ? (
-							this.classes(CSS.calciteStyles.alert, CSS.calciteStyles.active, CSS.calciteStyles.alertRed)
-						) : null
-					}
+				<calcite-alert
+					class={this.classes(themeClass)}
+					icon=""
+					auto-dismiss-duration="medium"
+					active=""
+					scale="m"
+					color="blue"
 				>
-					<span innerHTML={this.message} />
-					<button class={this.classes(CSS.calciteStyles.alertClose)} onclick={this._closeAlert}>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="32"
-							height="32"
-							viewBox="0 0 32 32"
-							class="svg-icon"
-						>
-							<path d="M18.404 16l9.9 9.9-2.404 2.404-9.9-9.9-9.9 9.9L3.696 25.9l9.9-9.9-9.9-9.898L6.1 3.698l9.9 9.899 9.9-9.9 2.404 2.406-9.9 9.898z" />
-						</svg>
-					</button>
-				</div>
+					<div slot="message">{this.message}</div>
+				</calcite-alert>
 			) : null;
 		return (
-			<div class={mapPositionClasses} role="application">
+			<div role="application" class={mapPositionClasses}>
 				<div class={this.classes(CSS.configApp)}>
 					<div class={mapTabletClass} bind={this} afterCreate={this._createMap} />
 				</div>
@@ -139,29 +125,15 @@ class MapPanel extends (Widget) {
 			</div>
 		);
 	}
-	private _closeAlert() {
-		this.message = null;
-		const alerts = document.getElementsByClassName('alert is-active');
-		for (let j = 0; j < alerts.length; j++) {
-			alerts[j].classList.remove('is-active');
-		}
-	}
+
 	private async _createMap(container) {
 		const portalItem: esri.PortalItem = this.base.results.applicationItem.value;
-		const appProxies = portalItem && portalItem.applicationProxies ? portalItem.applicationProxies : null;
-
-		appProxies && appProxies.forEach((proxy) => {
-			const { url } = this.config.helperServices.route;
-			if (proxy.sourceUrl === url) {
-				this.config.helperServices.route.url = proxy.proxyUrl;
-			}
-		});
+		const appProxies = portalItem?.applicationProxies ? portalItem.applicationProxies : null;
 		const defaultViewProperties = getConfigViewProperties(this.config);
 		const components = ["attribution"];
 		const mapContainer = {
 			container
 		};
-
 		const viewProperties = {
 			...defaultViewProperties,
 			ui: { components },
@@ -169,9 +141,19 @@ class MapPanel extends (Widget) {
 		};
 
 		try {
-			const map = (await createMapFromItem({ item: this.item, appProxies })) as esri.WebMap;
-
+			const map = (await createMapFromItem({ item: this.item, mapParams: { ground: "world-elevation" }, appProxies })) as esri.WebMap;
 			this.view = (await createView({ ...viewProperties, map })) as esri.MapView;
+
+			const ariadesc = this.config?.mapA11yDesc || portalItem?.snippet || portalItem?.description || null;
+			if (ariadesc) {
+				document.getElementById('mapDescription').innerHTML = ariadesc;
+				const rootNode = document.getElementsByClassName('esri-view-surface');
+				this.view.container.setAttribute("aria-describedby", 'mapDescription')
+				for (let k = 0; k < rootNode.length; k++) {
+					rootNode[k].setAttribute('aria-describedby', 'mapDescription');
+				}
+			}
+
 			if (!this.config.mapZoom) {
 				this.view.ui.remove("zoom");
 			}
@@ -183,12 +165,7 @@ class MapPanel extends (Widget) {
 				handler.remove();
 				this._initialExtent = this.view.extent.clone();
 			});
-			document.getElementById('mapDescription').innerHTML = i18n.map.description;
 
-			const rootNode = document.getElementsByClassName('esri-view-surface');
-			for (let k = 0; k < rootNode.length; k++) {
-				rootNode[k].setAttribute('aria-describedby', 'mapDescription');
-			}
 		} catch (error) {
 			const title = (this.item && this.item.title) || ' the application';
 			displayError({ title: 'Error', message: `Unable to load ${title} ` });
@@ -199,7 +176,8 @@ class MapPanel extends (Widget) {
 		this.message = null;
 	}
 	public resetExtent() {
-		this.view.goTo(this._initialExtent);
+		if (this._initialExtent)
+			this.view.goTo(this._initialExtent).catch(() => { });
 	}
 
 }

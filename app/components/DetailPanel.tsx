@@ -4,12 +4,12 @@ import Widget from 'esri/widgets/Widget';
 import Share from '../components/Share/Share';
 import ShareFeatures from '../components/Share/Share/ShareFeatures';
 import { whenOnce } from 'esri/core/watchUtils';
-import Handles = require('esri/core/Handles');
-import { tsx, renderable } from 'esri/widgets/support/widget';
-import i18n = require('dojo/i18n!../nls/resources');
+import Handles from 'esri/core/Handles';
+import { tsx, messageBundle } from 'esri/widgets/support/widget';
 
 import esri = __esri;
-import ConfigurationSettings = require('../ConfigurationSettings');
+import ConfigurationSettings from '../ConfigurationSettings';
+import MapPanel from './MapPanel';
 type State = 'ready' | 'loading';
 
 const CSS = {
@@ -26,14 +26,17 @@ const CSS = {
 		phoneHide: 'phone-hide'
 	},
 	svgIcon: 'svg-icon',
+	detailsHeader: 'details-header',
 	detailsTitle: 'details-title',
 	detailsContent: 'details-content',
 	hide: 'hide',
+	filter: "filter",
 	details: 'detail'
 };
 
 export interface DetailPanelProps extends esri.WidgetProperties {
 	config: ConfigurationSettings;
+	mapPanel: MapPanel,
 	view: esri.MapView;
 }
 
@@ -45,14 +48,14 @@ class DetailPanel extends (Widget) {
 	//
 	//--------------------------------------------------------------------------
 	@property()
-	@renderable(["introductionTitle", "introductionContent", "shareIncludeSocial"])
 	config: ConfigurationSettings = null;
 	@property() shareWidget: Share = null;
 	@property() view: esri.MapView = null;
-
+	@property()
+	@messageBundle("nearby/app/t9n/common")
+	messages = null;
 	private _handles: Handles = new Handles();
 	private _resultsPanel: HTMLElement = document.getElementById("resultsPanel");
-	private _filterPanel: HTMLElement = document.getElementById("filterPanel");
 	//----------------------------------
 	//
 	//  state - readOnly
@@ -66,7 +69,8 @@ class DetailPanel extends (Widget) {
 		const ready = this.get('view.ready');
 		return ready ? 'ready' : 'loading';
 	}
-
+	@property()
+	mapPanel: any = null;
 	constructor(props: DetailPanelProps) {
 		super(props);
 	}
@@ -98,11 +102,12 @@ class DetailPanel extends (Widget) {
 	}
 
 	render() {
-		const { shareIncludeSocial } = this.config;
+		const { share, theme } = this.config;
 		const title = this._getTitle();
 		const content = this._getContent();
+		const mapViewMobile = this?.mapPanel?.isMobileView ? "map-view-mobile" : null;
 		const socialShare =
-			shareIncludeSocial && this.shareWidget ? (
+			share && this.shareWidget ? (
 				<div
 					bind={this.shareWidget.container}
 					afterCreate={this._attachToNode}
@@ -110,22 +115,19 @@ class DetailPanel extends (Widget) {
 				/>
 			) : null;
 		return (
-			<div bind={this} class={this.classes(CSS.calciteStyles.panel, CSS.calciteStyles.panelNoPadding)}>
-				<button
-					bind={this}
-					aria-label={i18n.tools.close}
-					title={i18n.tools.close}
-					onclick={this.hidePanel}
-					class={this.classes(
-						CSS.details,
-						CSS.calciteStyles.right,
-						CSS.calciteStyles.btn,
-						CSS.calciteStyles.btnTransparent
-					)}
-				>
-					<svg class={this.classes(CSS.svgIcon)} xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M18.404 16l9.9 9.9-2.404 2.404-9.9-9.9-9.9 9.9L3.696 25.9l9.9-9.9-9.9-9.898L6.1 3.698l9.9 9.899 9.9-9.9 2.404 2.406-9.9 9.898z" /></svg>
-				</button>
-				<h3 class={this.classes(CSS.detailsTitle)}>{title}</h3>
+			<div bind={this} class={this.classes(mapViewMobile, CSS.calciteStyles.panel, CSS.calciteStyles.panelNoPadding)}>
+				<div class={CSS.detailsHeader}>
+					<span class={this.classes(CSS.detailsTitle)}>{title}</span>
+					<calcite-button
+						bind={this}
+						aria-label={this.config.bundle.close}
+						onclick={this.hidePanel}
+						appearance="transparent"
+						color={theme === "light" ? "neutral" : "inverse"}
+						icon-start="x"
+					>
+					</calcite-button>
+				</div>
 				<p class={this.classes(CSS.detailsContent)} innerHTML={content} />
 				{socialShare}
 			</div>
@@ -134,25 +136,19 @@ class DetailPanel extends (Widget) {
 	public hidePanel() {
 		const container = this.container as HTMLElement;
 		container.classList.add("hide");
-		//const filter = document.getElementById("filterPanel");
-		//const results = document.getElementById("resultsPanel");
-		this._resultsPanel.classList.remove("hide");
-		this._filterPanel.classList.remove("hide");
 
+		this._resultsPanel.classList.remove("hide");
+		if (this?.mapPanel?.isMobileView) {
+			this.mapPanel?.container?.classList.remove("hide");
+		}
 	}
 	public showPanel() {
-		// Check local storage 
 		const container = this.container as HTMLElement;
 		container.classList.remove("hide");
-		// If it's info-triggered hide the filter panel 
-		if (container.classList.contains("info-triggered")) {
-			//const results = document.getElementById("resultsPanel");
-
-			//const filter = document.getElementById("filterPanel");
-			this._filterPanel.classList.add("hide")
-			this._resultsPanel.classList.add("hide");
+		this._resultsPanel.classList.add("hide");
+		if (this?.mapPanel?.isMobileView) {
+			this.mapPanel?.container?.classList.add("hide");
 		}
-
 	}
 
 	_attachToNode(this: HTMLElement, node: HTMLElement): void {
@@ -164,7 +160,7 @@ class DetailPanel extends (Widget) {
 		let title = this.config.introductionTitle;
 		if (!title) {
 			// no title specified use default? 
-			title = i18n.onboarding.title;
+			title = this.messages.onboarding.title;
 		}
 
 		return title;
@@ -173,7 +169,7 @@ class DetailPanel extends (Widget) {
 		let content = this.config.introductionContent;
 
 		if (!content) {
-			content = i18n.onboarding.content;
+			content = this.messages.onboarding.content;
 		}
 		return content;
 	}

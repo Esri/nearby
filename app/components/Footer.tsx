@@ -5,11 +5,11 @@ import Widget from 'esri/widgets/Widget';
 
 import MapPanel from './MapPanel';
 import Handles from 'esri/core/Handles';
-import i18n = require('dojo/i18n!../nls/resources');
-import { renderable, tsx } from 'esri/widgets/support/widget';
+
+import { tsx, messageBundle } from 'esri/widgets/support/widget';
 
 import esri = __esri;
-import { ApplicationConfig } from 'ApplicationBase/interfaces';
+import { ApplicationConfig } from 'TemplatesCommonLib/interfaces/applicationBase';
 
 
 const CSS = {
@@ -46,13 +46,13 @@ class Footer extends (Widget) {
 	@property() mapPanel: MapPanel;
 
 	@property() config: ApplicationConfig;
-
 	@property()
-	@renderable()
+	@messageBundle("nearby/app/t9n/common")
+	messages = null;
+	@property()
 	hideMap: boolean;
 
 	@property()
-	@renderable()
 	mapButtonVisible = true;
 	//--------------------------------------------------------------------------
 	//
@@ -70,17 +70,36 @@ class Footer extends (Widget) {
 		super(props);
 	}
 	render() {
+
 		const showFooter = this.hideMap ? "hide" : null;
-		const mapButton = this.mapButtonVisible ? (<button bind={this} onclick={this.showMap} class={this.classes(CSS.button, CSS.fillButton, CSS.appButton, CSS.mapIcon)}>{i18n.map.label}</button>
-		) :
-			(<button bind={this} onclick={this.closeMap} class={this.classes(CSS.button, CSS.fillButton, CSS.appButton, CSS.tableIcon)}>{i18n.tools.results}</button>
-			);
+		const mapButton = this.mapButtonVisible ? (
+			<calcite-button
+				bind={this}
+				onclick={this.showMap}
+				color="blue"
+				icon-start="map"
+				appearance="solid"
+				width="full"
+				text={this.messages.map.label}
+			>
+				{this.messages.map.label}
+			</calcite-button>)
+			:
+			(<calcite-button bind={this}
+				onclick={this.closeMap}
+				icon-start="table"
+				color="blue"
+				width="full"
+				appearance="solid"
+				text={this.config.appBundle.tools.results}>
+				{this.config.appBundle.tools.results}
+			</calcite-button>);
 		return (
 			<div
 				class={this.classes(showFooter, CSS.footerColumn, CSS.phoneColumn, CSS.tabletColumn)}>
-				<div class={this.classes(CSS.paddingLeft, CSS.paddingRight, CSS.phoneColumn, CSS.tabletColumn, CSS.tabletShow)} >
+				<div class={this.classes(CSS.phoneColumn, CSS.tabletColumn, CSS.tabletShow)} >
 					{mapButton}
-				</div>;
+				</div>
 			</div>
 		)
 	}
@@ -88,9 +107,12 @@ class Footer extends (Widget) {
 	closeMap() {
 		this.mapButtonVisible = true;
 		this.mapPanel.view.container.classList.add('tablet-hide');
+
+		this.mapPanel.set("tabindex", "-1");
 		const mainNodes = document.getElementsByClassName('main-map-content');
 		for (let j = 0; j < mainNodes.length; j++) {
 			mainNodes[j].classList.remove('hide');
+			mainNodes[j].classList.remove("hidden");
 		}
 
 		this.mapPanel.selectedItemTitle = null;
@@ -100,18 +122,22 @@ class Footer extends (Widget) {
 		}
 
 		this.mapPanel.isMobileView = false;
-		document.getElementById('mapDescription').innerHTML = i18n.map.description;
+		document.getElementById('mapDescription').innerHTML = this.config.appBundle.map.description;
 	}
 	showMap() {
 		this.mapButtonVisible = false;
 		const mainNodes = document.getElementsByClassName('main-map-content');
+
 		for (let j = 0; j < mainNodes.length; j++) {
 			mainNodes[j].classList.add('hide');
+			mainNodes[j].classList.add("hidden");
 		}
 		this.mapPanel.isMobileView = true;
+		this.mapPanel.set("tabindex", "0");
+
 		this.mapPanel.view.container.classList.remove('tablet-hide');
 		//update the maps describedby item
-		document.getElementById('mapDescription').innerHTML = i18n.map.miniMapDescription;
+		document.getElementById('mapDescription').innerHTML = this.config.appBundle.map.miniMapDescription;
 		// if view size increases to greater than tablet close button if not already closed
 		const resizeListener = () => {
 			this.closeMap();

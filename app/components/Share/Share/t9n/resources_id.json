@@ -1,0 +1,13 @@
+{
+  "heading": "Bagikan",
+  "subHeading": "Bagikan peta ini",
+  "urlTitle": "Esri ArcGIS - {title}",
+  "urlSummary": "Periksa peta ini - {summary}",
+  "widgetLabel": "Bagikan",
+  "clipboard": "Salin ke Clipboard",
+  "sendLink": "Kirim tautan",
+  "embedMap": "Peta yang disematkan",
+  "copied": "Disalin",
+  "close": "ng_Close___________ny",
+  "copy": "ng_Copy_________ny"
+}

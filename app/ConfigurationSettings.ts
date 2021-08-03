@@ -2,9 +2,9 @@ import {
     property,
     subclass
 } from "esri/core/accessorSupport/decorators";
+import ConfigurationSettingsBase from 'TemplatesCommonLib/baseClasses/configurationSettingsBase';
 
-import Accessor from "esri/core/Accessor";
-import { ApplicationConfig } from "./application-base-js/interfaces";
+interface IExtentSelectorOutput { constraints: __esri.MapViewConstraints; mapRotation: number; }
 
 type Units =
     "feet" |
@@ -22,7 +22,6 @@ type UIPosition =
     | "bottom-leading"
     | "bottom-trailing";
 
-type PanelType = "details" | "legend" | "popup";
 
 interface SliderRange {
     minimum: number;
@@ -30,9 +29,27 @@ interface SliderRange {
     default?: number;
 }
 @subclass("app.ConfigurationSettings")
-class ConfigurationSettings extends (Accessor) {
+class ConfigurationSettings extends (ConfigurationSettingsBase) {
+
+    @property()
+    telemetry: any;
+
+    @property()
+    googleAnalytics: boolean;
+    @property()
+    googleAnalyticsKey: string;
+    @property()
+    googleAnalyticsConsentMsg: string;
+    @property()
+    googleAnalyticsConsent: boolean;
+
     @property()
     webmap: string;
+
+    @property()
+    extentSelectorConfig: IExtentSelectorOutput;
+    @property()
+    extentSelector: boolean;
 
     @property()
     mapZoom: boolean;
@@ -56,6 +73,9 @@ class ConfigurationSettings extends (Accessor) {
     legendPosition: UIPosition;
 
     @property()
+    legendConfig: __esri.LegendProperties;
+
+    @property()
     scalebar: boolean;
 
     @property()
@@ -69,6 +89,8 @@ class ConfigurationSettings extends (Accessor) {
 
     @property()
     nextBasemap: string;
+    @property()
+    basemapSelector: string;
 
     @property()
     theme: string;
@@ -77,10 +99,22 @@ class ConfigurationSettings extends (Accessor) {
     applySharedTheme: boolean;
 
     @property()
+    headerColor: string;
+    @property()
+    headerBackground: string;
+    @property()
+    enableHeaderBackground: boolean;
+    @property()
+    enableHeaderColor: boolean;
+
+    @property()
     title: string;
 
     @property()
     titleLink: string;
+
+    @property()
+    showIntroduction: boolean;
 
     @property()
     introductionTitle: string;
@@ -93,18 +127,10 @@ class ConfigurationSettings extends (Accessor) {
 
     /* Test below vals */
     @property()
-    headerBackground: string;
+    share: boolean;
 
     @property()
-    headerColor: string;
-
-    @property()
-    buttonBackground: string;
-    @property()
-    buttonColor: string;
-
-    @property()
-    shareIncludeSocial: boolean;
+    customCSS: string;
 
     @property()
     interactiveResults: boolean;
@@ -128,6 +154,15 @@ class ConfigurationSettings extends (Accessor) {
     showDirections: boolean;
 
     @property()
+    directionsLayers: any;
+
+    @property()
+    useDirectionsApp: boolean;
+
+    @property()
+    showElevationProfile: boolean;
+
+    @property()
     includeDistance: boolean;
 
 
@@ -140,9 +175,27 @@ class ConfigurationSettings extends (Accessor) {
     @property()
     relationship: __esri.QueryProperties["spatialRelationship"];
 
+    @property()
+    shareSelected: boolean;
+
+    @property()
+    enableBufferSearch: boolean;
+
+    @property()
+    searchScale: number;
+
+    @property()
+    enableSearchScale: boolean;
 
     @property()
     drawBuffer: boolean;
+
+    @property()
+    enableBufferColor: boolean;
+    @property()
+    bufferColor: string;
+    @property()
+    bufferTransparency: number;
 
     @property()
     hideLayers: boolean;
@@ -151,7 +204,10 @@ class ConfigurationSettings extends (Accessor) {
     sliderRange: SliderRange;
 
     @property()
-    precision: string;
+    showSlider: boolean;
+
+    @property()
+    precision: number;
     @property()
     inputsEnabled: boolean;
 
@@ -170,48 +226,59 @@ class ConfigurationSettings extends (Accessor) {
 
     @property()
     mapPin: boolean;
+
+    @property()
+    mapPinIcon: string;
+
     @property()
     mapPinLabel: boolean;
-
+    @property()
+    mapPinColor: any;
 
     @property()
-    withinConfigurationExperience: boolean =
-        window.location !== window.parent.location;
+    mapPinLabelColor: any;
 
+    @property()
+    mapPinSize: number;
+    @property()
+    mapPinLabelSize: number;
 
-    _storageKey = "config-values";
-    _draft: ApplicationConfig = null;
-    _draftMode = false;
-    constructor(params?: ApplicationConfig) {
+    @property()
+    screenshot: boolean;
+    @property()
+    screenshotPosition: UIPosition;
 
-        super(params);
-        this._draft = params?.draft;
-        this._draftMode = params?.mode === "draft";
-    }
-    initialize() {
-        if (this.withinConfigurationExperience || this._draftMode) {
-            // Apply any draft properties
-            if (this._draft) {
-                Object.assign(this, this._draft);
-            }
+    @property()
+    bookmarks: boolean;
+    @property()
+    bookmarksPosition: UIPosition;
+    @property()
+    mapA11yDesc: string;
 
-            window.addEventListener(
-                "message",
-                function (e) {
-                    this._handleConfigurationUpdates(e);
-                }.bind(this),
-                false
-            );
-        }
-    }
+    @property()
+    enableFilter: boolean;
+    @property()
+    filterConfig: any;
+    @property()
+    bundle: any;
 
-    _handleConfigurationUpdates(e) {
-        if (e?.data?.type === "cats-app") {
-            Object.assign(this, e.data);
-        }
-    }
-    mixinConfig() {
+    @property()
+    appBundle: any;
 
-    }
+    @property()
+    coverPage: boolean;
+    @property()
+    coverPageConfig: any;
+
+    @property()
+    panelSize: string;
+
+    @property() select: string;
+
+    @property() level: any;
+    @property() center: any;
+
+    @property()
+    searchLayer: any;
 }
 export = ConfigurationSettings;

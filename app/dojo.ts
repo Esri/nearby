@@ -7,7 +7,7 @@
 
   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
   Unless required by applicable law or agreed to in writing, software
 
@@ -22,29 +22,39 @@
 
 (() => {
 	const { pathname, search } = window.location;
-	const distPath = pathname.substring(0, pathname.lastIndexOf('/'));
+	const appPath = pathname.substring(0, pathname.lastIndexOf('/'));
+	const instantPath = appPath.slice(0, appPath.lastIndexOf("/"));
 	const localeUrlParamRegex = /locale=([\w-]+)/;
 	const dojoLocale = search.match(localeUrlParamRegex) ? RegExp.$1 : undefined;
-
 	const config = {
 		async: true,
-		locale: dojoLocale, // unset this if we move to modules 
+		locale: dojoLocale,
 		packages: [
-			{ name: 'Application', location: `${distPath}/app`, main: 'Main' },
 			{
-				name: 'ApplicationBase',
-				location: `${distPath}/app/application-base-js`,
-				main: 'ApplicationBase'
+				name: "Application",
+				location: `${appPath}/app`,
+				main: "Main"
+			},
+			{
+				name: "TemplatesCommonLib",
+				location: `${instantPath}/node_modules/templates-common-library`
+			},
+			{
+				name: 'Components',
+				location: `${instantPath}/node_modules/@esri/configurable-app-components`,
+				main: "Screenshot"
 			},
 			{
 				name: 'telemetry',
-				location: `${distPath}/app/telemetry`
+				location: `${appPath}/app/telemetry`
 			},
-			{ name: 'config', location: `${distPath}/config` },
-			{ name: 'calcite-web', location: `${distPath}/app/calcite-web` }
+			{
+				name: "config",
+				location: `${appPath}/config`
+			}
 		]
 	};
 
-	window['esriConfig'] = { locale: dojoLocale }
-	window['dojoConfig'] = config;
+	window["esriConfig"] = { locale: dojoLocale };
+	window["dojoConfig"] = config;
 })();

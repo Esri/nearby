@@ -7,7 +7,7 @@
 
   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
   Unless required by applicable law or agreed to in writing, software
 
@@ -42,8 +42,8 @@ export async function getDistances(params: DistanceParams) {
 
 		const sr: SpatialReference = (location?.spatialReference) ? location.spatialReference : null;
 		const feature = params.features && params.features.length && params.features.length > 0 ? params.features[0] : null;
-		const sr2: SpatialReference = feature.geometry && feature.geometry.spatialReference ? feature.geometry.spatialReference : null;
-		const type = (feature.geometry && feature.geometry.type) ? feature.geometry.type : null;
+		const sr2: SpatialReference = feature?.geometry && feature?.geometry?.spatialReference ? feature.geometry.spatialReference : null;
+		const type = (feature?.geometry && feature?.geometry?.type) ? feature.geometry.type : null;
 		if (type === "point" && (sr.wkid === sr2.wkid)) {
 
 			const srValid = sr.isGeographic || sr.isWebMercator;
@@ -69,7 +69,7 @@ export async function getDistances(params: DistanceParams) {
 
 		}
 		else {
-			measureDistance = distance(location, feature.geometry, unit);
+			measureDistance = distance(location as any, feature.geometry, unit);
 		}
 
 		if (feature && feature.attributes) {
@@ -88,9 +88,9 @@ export function bufferGeometry(params: BufferParams) {
 			wkid: 102100
 		});
 	if (spatialReference.isWGS84 || spatialReference.isWebMercator) {
-		return geodesicBuffer(location, distance, unit);
+		return geodesicBuffer(location as any, distance, unit);
 	} else {
-		return buffer(location, distance, unit);
+		return buffer(location as any, distance, unit);
 	}
 }
 

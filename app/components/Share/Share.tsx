@@ -1,6 +1,5 @@
 
-// dojo
-import i18n = require('dojo/i18n!./Share/nls/resources');
+
 
 // esri.core
 import Collection = require('esri/core/Collection');
@@ -19,7 +18,7 @@ import SceneView = require('esri/views/SceneView');
 import Widget = require('esri/widgets/Widget');
 
 //esri.widgets.support
-import { accessibleHandler, renderable, tsx, storeNode } from 'esri/widgets/support/widget';
+import { accessibleHandler, tsx, storeNode, messageBundle } from 'esri/widgets/support/widget';
 
 // View Model
 import ShareViewModel = require('./Share/ShareViewModel');
@@ -110,10 +109,9 @@ const CSS = {
 		copyIconContainer: 'esri-share__copy-icon-container',
 		copy: 'esri-share__copy-icon',
 		esriLoader: 'esri-share__loader',
-		closeIcon: 'icon-ui-close',
+		closeIcon: 'esri-icon-close',
 		copyToClipboardIcon: 'icon-ui-duplicate',
-		flush: 'icon-ui-flush',
-		link: 'icon-ui-link'
+		link: 'esri-icon-link'
 	}
 };
 
@@ -159,7 +157,6 @@ class Share extends (Widget) {
 	//
 	//----------------------------------
 	@aliasOf('viewModel.shareModalOpened')
-	@renderable()
 	shareModalOpened: boolean = true;
 
 	//----------------------------------
@@ -169,7 +166,6 @@ class Share extends (Widget) {
 	//----------------------------------
 
 	@aliasOf('viewModel.shareItems')
-	@renderable()
 	shareItems: Collection<ShareItem> = null;
 
 	//----------------------------------
@@ -178,7 +174,6 @@ class Share extends (Widget) {
 	//
 	//----------------------------------
 	@aliasOf('viewModel.shareFeatures')
-	@renderable()
 	shareFeatures: ShareFeatures = null;
 
 	//----------------------------------
@@ -188,7 +183,6 @@ class Share extends (Widget) {
 	//----------------------------------
 
 	@aliasOf('viewModel.shareUrl')
-	@renderable()
 	shareUrl: string = null;
 
 	//----------------------------------
@@ -198,7 +192,6 @@ class Share extends (Widget) {
 	//----------------------------------
 
 	@aliasOf('viewModel.defaultObjectId')
-	@renderable()
 	defaultObjectId: number = null;
 
 	//----------------------------------
@@ -208,7 +201,6 @@ class Share extends (Widget) {
 	//----------------------------------
 
 	@aliasOf('viewModel.attachmentIndex')
-	@renderable()
 	attachmentIndex: number = null;
 
 	//----------------------------------
@@ -218,7 +210,6 @@ class Share extends (Widget) {
 	//----------------------------------
 
 	@aliasOf('viewModel.isDefault')
-	@renderable()
 	isDefault: boolean = null;
 
 	//----------------------------------
@@ -228,7 +219,7 @@ class Share extends (Widget) {
 	//----------------------------------
 
 	@property() iconClass = CSS.icons.widgetIcon;
-	@property() label = i18n.widgetLabel;
+	@property() label;
 
 	//----------------------------------
 	//
@@ -236,11 +227,13 @@ class Share extends (Widget) {
 	//
 	//----------------------------------
 
-	@renderable(['viewModel.state', 'viewModel.embedCode', 'viewModel.shareFeatures'])
 	@property({
 		type: ShareViewModel
 	})
 	viewModel: ShareViewModel = new ShareViewModel();
+	@property()
+	@messageBundle("nearby/app/components/Share/Share/t9n/resources")
+	shareMessages = null;
 
 	//----------------------------------
 	//
@@ -261,6 +254,7 @@ class Share extends (Widget) {
 				this._removeCopyTooltips();
 			})
 		]);
+		this.label = this.shareMessages.widgetLabel;
 	}
 
 	destroy() {
@@ -310,8 +304,8 @@ class Share extends (Widget) {
 				const shareItem = node['data-share-item'] as ShareItem;
 				const { urlTemplate } = shareItem;
 				const portalItem = this.get<PortalItem>('view.map.portalItem');
-				const title = portalItem && portalItem.title ? replace(i18n.urlTitle, { title: portalItem.title }) : replace(i18n.urlTitle, { title: "" });
-				const summary = portalItem && portalItem.snippet ? replace(i18n.urlSummary, { summary: portalItem.snippet }) : replace(i18n.urlSummary, { summary: "" });
+				const title = portalItem && portalItem.title ? replace(this.shareMessages.urlTitle, { title: portalItem.title }) : replace(this.shareMessages.urlTitle, { title: "" });
+				const summary = portalItem && portalItem.snippet ? replace(this.shareMessages.urlSummary, { summary: portalItem.snippet }) : replace(this.shareMessages.urlSummary, { summary: "" });
 				this._openUrl(this.shareUrl, title, summary, urlTemplate);
 			}),
 			shareKey
@@ -358,7 +352,6 @@ class Share extends (Widget) {
 			<div class={this.classes(CSS.shareModal.main.mainShare.shareItem, name)} key={name}>
 				<div
 					class={className}
-					title={name}
 					aria-label={name}
 					onclick={this._processShareItem}
 					onkeydown={this._processShareItem}
@@ -415,9 +408,9 @@ class Share extends (Widget) {
 				class={this.classes(CSS.shareModal.main.mainShare.shareItem, CSS.shareLinkContainer)}
 			>
 				<div
-					class={this.classes(CSS.icons.link, CSS.icons.flush)}
-					title="Send link"
-					aria-label="Send link"
+					class={this.classes(CSS.icons.link)}
+					title={this.shareMessages.sendLink}
+					aria-label={this.shareMessages.sendLink}
 					role="button"
 				/>
 			</div>
@@ -440,35 +433,33 @@ class Share extends (Widget) {
 								bind={this}
 								onclick={this._toggleShareLinkNode}
 								onkeydown={this._toggleShareLinkNode}
-								class={this.classes(CSS.shareModal.close, CSS.icons.closeIcon, CSS.icons.flush)}
-								title="close"
-								label="close"
+								class={this.classes(CSS.shareModal.close, CSS.icons.closeIcon)}
+								title={this.shareMessages.close}
+								label={this.shareMessages.close}
 								aria-label="close-modal"
 								tabindex="0"
 							/>
 							<div class={CSS.shareModal.main.mainCopy.copyClipboardContainer}>
 								<input
 									type="text"
-									class={CSS.shareModal.main.mainUrl.urlInput}
+									class={this.classes(CSS.shareModal.main.mainUrl.urlInput)}
 									bind={this}
 									value={this.viewModel.state === 'ready' ? this.shareUrl : `loading...`}
 									afterCreate={storeNode}
 									data-node-ref="_urlInputNode"
 									readOnly
 								/>
-								<div
+								<button
 									class={this.classes(CSS.shareModal.main.mainCopy.copyClipboardUrl, toolTipClasses)}
 									bind={this}
 									onclick={this._copyUrlInput}
 									onkeydown={this._copyUrlInput}
-									tabIndex={0}
-									title="copy"
-									label="copy"
-									aria-label={i18n.copied}
-									role="button"
+									title={this.shareMessages.copy}
+									label={this.shareMessages.copy}
+									aria-label={this.shareMessages.copied}
 								>
-									copy
-								</div>
+									{this.shareMessages.copy}
+								</button>
 							</div>
 						</div>
 					</div>

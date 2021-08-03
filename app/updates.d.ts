@@ -1,4 +1,20 @@
+interface ClipboardItem {
+  readonly types: string[];
+  readonly presentationStyle: "unspecified" | "inline" | "attachment";
+  getType(): Promise<Blob>;
+}
+
+interface ClipboardItemData {
+  [mimeType: string]: Blob | string | Promise<Blob | string>;
+}
+
+declare var ClipboardItem: {
+  prototype: ClipboardItem;
+  new(itemData: ClipboardItemData): ClipboardItem;
+};
 declare namespace __esri {
+
+
   interface lang {
     /**
      * Use this method to deeply clone objects with properties that are computed or have their own `clone()` method. For example, if you are creating an object that stores an initial extent and a spatial reference for your application, you can use `esriLang.clone(initialProps)` to clone this object so that the `extent` and `spatialReference` are properly cloned.

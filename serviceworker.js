@@ -23,7 +23,6 @@ self.addEventListener('fetch', (event) => {
                                 // the server and adds the response to the cache 
                                 './index.html', // cache your index page
                                 './styles/main.css', // cache app.main css
-                                './app/calcite-web/dist/css/calcite-web.min.css',
                                 './assets/*', // cache all images
                                 './manifest.json',
                                 // external url fetch, twitter's as an example

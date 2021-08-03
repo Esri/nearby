@@ -1,12 +1,10 @@
 
-import { tsx, renderable } from 'esri/widgets/support/widget';
+import { tsx, messageBundle } from 'esri/widgets/support/widget';
 import { subclass, property } from 'esri/core/accessorSupport/decorators';
 import Widget from "esri/widgets/Widget";
-import { accordion } from 'calcite-web/dist/js/calcite-web';
-import i18n = require('dojo/i18n!../nls/resources');
 
 import esri = __esri;
-import { ApplicationConfig } from 'ApplicationBase/interfaces';
+import { ApplicationConfig } from 'TemplatesCommonLib/interfaces/applicationBase';
 
 const CSS = {
     base: 'accordion',
@@ -39,6 +37,7 @@ export interface ActionButton {
     icon: string;
     id: string;
     name: string;
+    tip?: string;
     class?: string;
     handleClick: (name: string, graphic: esri.Graphic) => void;
 }
@@ -57,17 +56,11 @@ abstract class Accordion extends (Widget) {
 
     @property() view: esri.MapView;
 
-
     @property() config: ApplicationConfig;
 
-
-    // Methods
-    updateCalcite() {
-        if (!this._calciteLoaded) {
-            accordion();
-            this._calciteLoaded = true;
-        }
-    }
+    @property()
+    @messageBundle("nearby/app/t9n/common")
+    messages = null;
     createPostText() {
         return (
             <p key="postText" class={CSS.messageText} innerHTML={this.config.resultsPanelPostText} />
@@ -107,22 +100,27 @@ abstract class Accordion extends (Widget) {
             return null;
         }
     }
+
     createActionItem(item, graphic) {
+        const { theme } = this.config;
+        let themeClass = theme === "dark" ? "calcite-theme-dark" : "calcite-theme-light";
+        const { id, icon, name, tip } = item;
         return (
-            <button
-                onclick={() => this.actionItemClick(graphic, item)}
-                class={this.classes(CSS.button, CSS.transparentButton, CSS.directions, CSS.left, item.icon, item.class)}
+            <calcite-button key={id} icon-end={icon} appearance="clear"
+                onclick={(e) => this.actionItemClick(e, graphic, item)}
+                aria-label={name} title={tip ? tip : name}
+                class={this.classes(CSS.directions, CSS.left, themeClass)}
             >
-                {item.name}
-            </button>
+                <span class="action-name"> {name}</span>
+            </calcite-button >
         );
     }
-    actionItemClick(graphic, item) {
-        item.handleClick(item.id, graphic);
+    actionItemClick(button, graphic, item) {
+        item.handleClick(button, item.id, graphic);
     }
 
     convertUnitText(distance, units) {
-        let unit = i18n.units[units];
+        let unit = this.messages.units[units];
         unit = unit ? unit.abbr : "mi";
         return `<span class="distance right" title="">
         (${distance} ${unit})</span>`;

@@ -1,23 +1,4 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-define(["require", "exports", "dojo/i18n!./Share/nls/resources", "esri/core/watchUtils", "./utils/replace", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/widgets/support/widget", "./Share/ShareViewModel", "esri/core/Handles"], function (require, exports, i18n, watchUtils, replace_1, decorators_1, Widget, widget_1, ShareViewModel, Handles) {
+define(["require", "exports", "tslib", "esri/core/watchUtils", "./utils/replace", "esri/core/accessorSupport/decorators", "esri/widgets/Widget", "esri/widgets/support/widget", "./Share/ShareViewModel", "esri/core/Handles"], function (require, exports, tslib_1, watchUtils, replace_1, decorators_1, Widget, widget_1, ShareViewModel, Handles) {
     "use strict";
     //----------------------------------
     //
@@ -92,14 +73,13 @@ define(["require", "exports", "dojo/i18n!./Share/nls/resources", "esri/core/watc
             copyIconContainer: 'esri-share__copy-icon-container',
             copy: 'esri-share__copy-icon',
             esriLoader: 'esri-share__loader',
-            closeIcon: 'icon-ui-close',
+            closeIcon: 'esri-icon-close',
             copyToClipboardIcon: 'icon-ui-duplicate',
-            flush: 'icon-ui-flush',
-            link: 'icon-ui-link'
+            link: 'esri-icon-link'
         }
     };
     var Share = /** @class */ (function (_super) {
-        __extends(Share, _super);
+        tslib_1.__extends(Share, _super);
         function Share(value) {
             var _this = _super.call(this, value) || this;
             //----------------------------------
@@ -174,13 +154,13 @@ define(["require", "exports", "dojo/i18n!./Share/nls/resources", "esri/core/watc
             //
             //----------------------------------
             _this.iconClass = CSS.icons.widgetIcon;
-            _this.label = i18n.widgetLabel;
             //----------------------------------
             //
             //  viewModel
             //
             //----------------------------------
             _this.viewModel = new ShareViewModel();
+            _this.shareMessages = null;
             return _this;
         }
         //----------------------------------
@@ -202,6 +182,7 @@ define(["require", "exports", "dojo/i18n!./Share/nls/resources", "esri/core/watc
                     _this._removeCopyTooltips();
                 })
             ]);
+            this.label = this.shareMessages.widgetLabel;
         };
         Share.prototype.destroy = function () {
             this._iframeInputNode = null;
@@ -241,8 +222,8 @@ define(["require", "exports", "dojo/i18n!./Share/nls/resources", "esri/core/watc
                 var shareItem = node['data-share-item'];
                 var urlTemplate = shareItem.urlTemplate;
                 var portalItem = _this.get('view.map.portalItem');
-                var title = portalItem && portalItem.title ? replace_1.replace(i18n.urlTitle, { title: portalItem.title }) : replace_1.replace(i18n.urlTitle, { title: "" });
-                var summary = portalItem && portalItem.snippet ? replace_1.replace(i18n.urlSummary, { summary: portalItem.snippet }) : replace_1.replace(i18n.urlSummary, { summary: "" });
+                var title = portalItem && portalItem.title ? replace_1.replace(_this.shareMessages.urlTitle, { title: portalItem.title }) : replace_1.replace(_this.shareMessages.urlTitle, { title: "" });
+                var summary = portalItem && portalItem.snippet ? replace_1.replace(_this.shareMessages.urlSummary, { summary: portalItem.snippet }) : replace_1.replace(_this.shareMessages.urlSummary, { summary: "" });
                 _this._openUrl(_this.shareUrl, title, summary, urlTemplate);
             }), shareKey);
         };
@@ -277,7 +258,7 @@ define(["require", "exports", "dojo/i18n!./Share/nls/resources", "esri/core/watc
         Share.prototype._renderShareItem = function (shareItem) {
             var name = shareItem.name, className = shareItem.className;
             return (widget_1.tsx("div", { class: this.classes(CSS.shareModal.main.mainShare.shareItem, name), key: name },
-                widget_1.tsx("div", { class: className, title: name, "aria-label": name, onclick: this._processShareItem, onkeydown: this._processShareItem, tabIndex: 0, bind: this, "data-share-item": shareItem, role: "button" })));
+                widget_1.tsx("div", { class: className, "aria-label": name, onclick: this._processShareItem, onkeydown: this._processShareItem, tabIndex: 0, bind: this, "data-share-item": shareItem, role: "button" })));
         };
         Share.prototype._renderShareItems = function () {
             var _this = this;
@@ -305,7 +286,7 @@ define(["require", "exports", "dojo/i18n!./Share/nls/resources", "esri/core/watc
         };
         Share.prototype._renderShareLinkNode = function () {
             return (widget_1.tsx("div", { onclick: this._toggleShareLinkNode, onkeydown: this._toggleShareLinkNode, tabIndex: 0, bind: this, class: this.classes(CSS.shareModal.main.mainShare.shareItem, CSS.shareLinkContainer) },
-                widget_1.tsx("div", { class: this.classes(CSS.icons.link, CSS.icons.flush), title: "Send link", "aria-label": "Send link", role: "button" })));
+                widget_1.tsx("div", { class: this.classes(CSS.icons.link), title: this.shareMessages.sendLink, "aria-label": this.shareMessages.sendLink, role: "button" })));
         };
         Share.prototype._renderCopyUrl = function () {
             var _a;
@@ -317,10 +298,10 @@ define(["require", "exports", "dojo/i18n!./Share/nls/resources", "esri/core/watc
             return (widget_1.tsx("div", { class: CSS.sendLinkContainer }, copyToClipboard ? (widget_1.tsx("div", { class: CSS.shareModal.main.mainCopy.copyContainer, key: "copy-container" },
                 widget_1.tsx("div", { class: CSS.shareModal.main.mainUrl.inputGroup },
                     widget_1.tsx("h2", { class: CSS.shareModal.main.mainHeader }, "Send a link to this page"),
-                    widget_1.tsx("div", { bind: this, onclick: this._toggleShareLinkNode, onkeydown: this._toggleShareLinkNode, class: this.classes(CSS.shareModal.close, CSS.icons.closeIcon, CSS.icons.flush), title: "close", label: "close", "aria-label": "close-modal", tabindex: "0" }),
+                    widget_1.tsx("div", { bind: this, onclick: this._toggleShareLinkNode, onkeydown: this._toggleShareLinkNode, class: this.classes(CSS.shareModal.close, CSS.icons.closeIcon), title: this.shareMessages.close, label: this.shareMessages.close, "aria-label": "close-modal", tabindex: "0" }),
                     widget_1.tsx("div", { class: CSS.shareModal.main.mainCopy.copyClipboardContainer },
-                        widget_1.tsx("input", { type: "text", class: CSS.shareModal.main.mainUrl.urlInput, bind: this, value: this.viewModel.state === 'ready' ? this.shareUrl : "loading...", afterCreate: widget_1.storeNode, "data-node-ref": "_urlInputNode", readOnly: true }),
-                        widget_1.tsx("div", { class: this.classes(CSS.shareModal.main.mainCopy.copyClipboardUrl, toolTipClasses), bind: this, onclick: this._copyUrlInput, onkeydown: this._copyUrlInput, tabIndex: 0, title: "copy", label: "copy", "aria-label": i18n.copied, role: "button" }, "copy"))))) : null));
+                        widget_1.tsx("input", { type: "text", class: this.classes(CSS.shareModal.main.mainUrl.urlInput), bind: this, value: this.viewModel.state === 'ready' ? this.shareUrl : "loading...", afterCreate: widget_1.storeNode, "data-node-ref": "_urlInputNode", readOnly: true }),
+                        widget_1.tsx("button", { class: this.classes(CSS.shareModal.main.mainCopy.copyClipboardUrl, toolTipClasses), bind: this, onclick: this._copyUrlInput, onkeydown: this._copyUrlInput, title: this.shareMessages.copy, label: this.shareMessages.copy, "aria-label": this.shareMessages.copied }, this.shareMessages.copy))))) : null));
         };
         Share.prototype._renderSendALinkContent = function () {
             var copyUrlNode = this._renderCopyUrl();
@@ -329,63 +310,58 @@ define(["require", "exports", "dojo/i18n!./Share/nls/resources", "esri/core/watc
                 shareServicesNode,
                 this._shareLinkElementIsOpen ? copyUrlNode : null));
         };
-        __decorate([
+        tslib_1.__decorate([
             decorators_1.aliasOf('viewModel.view')
         ], Share.prototype, "view", void 0);
-        __decorate([
-            decorators_1.aliasOf('viewModel.shareModalOpened'),
-            widget_1.renderable()
+        tslib_1.__decorate([
+            decorators_1.aliasOf('viewModel.shareModalOpened')
         ], Share.prototype, "shareModalOpened", void 0);
-        __decorate([
-            decorators_1.aliasOf('viewModel.shareItems'),
-            widget_1.renderable()
+        tslib_1.__decorate([
+            decorators_1.aliasOf('viewModel.shareItems')
         ], Share.prototype, "shareItems", void 0);
-        __decorate([
-            decorators_1.aliasOf('viewModel.shareFeatures'),
-            widget_1.renderable()
+        tslib_1.__decorate([
+            decorators_1.aliasOf('viewModel.shareFeatures')
         ], Share.prototype, "shareFeatures", void 0);
-        __decorate([
-            decorators_1.aliasOf('viewModel.shareUrl'),
-            widget_1.renderable()
+        tslib_1.__decorate([
+            decorators_1.aliasOf('viewModel.shareUrl')
         ], Share.prototype, "shareUrl", void 0);
-        __decorate([
-            decorators_1.aliasOf('viewModel.defaultObjectId'),
-            widget_1.renderable()
+        tslib_1.__decorate([
+            decorators_1.aliasOf('viewModel.defaultObjectId')
         ], Share.prototype, "defaultObjectId", void 0);
-        __decorate([
-            decorators_1.aliasOf('viewModel.attachmentIndex'),
-            widget_1.renderable()
+        tslib_1.__decorate([
+            decorators_1.aliasOf('viewModel.attachmentIndex')
         ], Share.prototype, "attachmentIndex", void 0);
-        __decorate([
-            decorators_1.aliasOf('viewModel.isDefault'),
-            widget_1.renderable()
+        tslib_1.__decorate([
+            decorators_1.aliasOf('viewModel.isDefault')
         ], Share.prototype, "isDefault", void 0);
-        __decorate([
+        tslib_1.__decorate([
             decorators_1.property()
         ], Share.prototype, "iconClass", void 0);
-        __decorate([
+        tslib_1.__decorate([
             decorators_1.property()
         ], Share.prototype, "label", void 0);
-        __decorate([
-            widget_1.renderable(['viewModel.state', 'viewModel.embedCode', 'viewModel.shareFeatures']),
+        tslib_1.__decorate([
             decorators_1.property({
                 type: ShareViewModel
             })
         ], Share.prototype, "viewModel", void 0);
-        __decorate([
+        tslib_1.__decorate([
+            decorators_1.property(),
+            widget_1.messageBundle("nearby/app/components/Share/Share/t9n/resources")
+        ], Share.prototype, "shareMessages", void 0);
+        tslib_1.__decorate([
             widget_1.accessibleHandler()
         ], Share.prototype, "_copyUrlInput", null);
-        __decorate([
+        tslib_1.__decorate([
             widget_1.accessibleHandler()
         ], Share.prototype, "_toggleShareLinkNode", null);
-        __decorate([
+        tslib_1.__decorate([
             widget_1.accessibleHandler()
         ], Share.prototype, "_processShareItem", null);
-        Share = __decorate([
+        Share = tslib_1.__decorate([
             decorators_1.subclass('Share')
         ], Share);
         return Share;
     }((Widget)));
     return Share;
 });
-//# sourceMappingURL=Share.js.map

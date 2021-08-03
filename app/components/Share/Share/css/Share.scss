@@ -23,7 +23,6 @@ $text-color: #949494;
 $border-color: #949494;
 $background-color: #fff;
 $heading-font-size: 1.2em;
-$copy-clipboard-hover: gold;
 $url-input-border: #d3d3d3;
 $input-text-color: #6e6e6e;
 $modal-button-text-color: #fff;
@@ -121,6 +120,7 @@ $icon-width: 20px;
     flex-direction: row;
   }
 
+
   .esri-share__copy-button,
   .esri-share__copy-clipboard-url,
   .esri-share__copy-clipboard-iframe {
@@ -131,7 +131,7 @@ $icon-width: 20px;
     text-align: center;
     background-color: $modal-button-background-color;
     color: $modal-button-text-color;
-    height: 30px;
+    height: 42px;
     vertical-align: top;
     box-sizing: border-box;
     padding-top: 2px;
@@ -144,7 +144,7 @@ $icon-width: 20px;
 
   .esri-share__copy-clipboard-url:hover,
   .esri-share__copy-clipboard-iframe:hover {
-    background-color: $copy-clipboard-hover;
+    opacity: 0.4;
     cursor: pointer;
   }
 
@@ -479,7 +479,7 @@ html[dir="rtl"] {
   }
 
   .esri-share__share-link:hover {
-    background-color: #338033;
+    opacity: .60;
   }
 }
 

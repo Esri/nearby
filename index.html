@@ -10,34 +10,34 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title></title>
   <link rel="manifest" href="./manifest.json">
-  <link rel="icon" href="assets/favicon.ico" sizes="32x32" type="image/vnd.microsoft.icon">
+  <link rel="shortcut icon" href="./favicon.png" type="image/ico">
   <meta name="description" content="Find Nearby">
   <meta name="theme-color" content="#0079c1" />
   <noscript>
     <p>Please enable JavaScript to use this site.</p>
   </noscript>
+  <link rel="stylesheet" type="text/css" href="../node_modules/@esri/calcite-components/dist/calcite/calcite.css" />
+
+  <link id="esri-stylesheet" rel="stylesheet" href="https://js.arcgis.com/4.20/esri/themes/light/main.css" />
+
+  <link rel="stylesheet" href="styles/main.css" media="print" onload="this.media='all'">
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./serviceworker.js', {
-        scope: './sw-test/'
-      })
-        .then(function (reg) {
-          // registration worked
-          console.log('Registration succeeded. Scope is ' + reg.scope);
-        }).catch(function (error) {
-          // registration failed
-          console.log('Registration failed with ' + error);
-        });
+
+    if (navigator && navigator.userAgent) {
+      var match = /\b(MSIE |Trident.*?rv:|Edge\/)(\d+)/.exec(navigator.userAgent);
+      if (match && match.length && match.length === 3) {
+        const version = parseInt(match[2]);
+        if (version <= 19) {
+          document.location = "../../shared/unsupported/index.html";
+        }
+      }
     }
 
   </script>
-  <link id="esri-stylesheet" rel="stylesheet" href="https://js.arcgis.com/4.16/esri/themes/light/main.css" />
-
-  <link rel="stylesheet" href="styles/main.css" media="print" onload="this.media='all'">
-  <script src="./app/es6-promise.auto.min.js"></script>
-
+  <script type="module" src="../node_modules/@esri/calcite-components/dist/calcite/calcite.esm.js"></script>
+  <script nomodule="" src="../node_modules/@esri/calcite-components/dist/calcite/calcite.js"></script>
   <script src="./app/dojo.js"></script>
-  <script src="https://js.arcgis.com/4.16/"></script>
+  <script src="https://js.arcgis.com/4.20/"></script>
   <script>
     require(["Application/init"]);
 
@@ -47,39 +47,40 @@
 <body class="configurable-application--loading">
   <!-- content of page -->
   <div id="appMain" class="grid-container leader-0 trailer-0 padding-left-0 padding-right-0">
-    <div id="mapDescription" aria-live="polite" class="hide"></div>
+    <div id="mapDescription" class="sr-only"></div>
 
-    <div id="sidePanel" class="side-panel phone-column-6 tablet-column-12 column-10 padding-left-0 padding-right-0">
+    <div id="sidePanel"
+      class="size-panel side-panel phone-column-6 tablet-column-12 column-10 padding-left-0 padding-right-0">
       <div class="wrapper">
         <!-- header -->
         <header class="panel panel-no-padding panel-no-border app-header">
           <div id="header"></div>
         </header>
-        <div id="detailPanel"
-          class="panel hide  phone-column-6 tablet-column-12 column-10 detail-panel  padding-left-0 padding-right-0">
+        <div id="printPanel" class="size-panel print-panel panel hide phone-column-6 tablet-column-12 column-10">
         </div>
-        <div id="printPanel" class="print-panel panel hide phone-column-6 tablet-column-12 column-10">
-        </div>
-        <div id="filterPanel"
+        <div id="refinePanel"
           class="panel panel-no-border panel-no-padding leader-0 trailer-0 padding-leader-0 trailing-leader-0 main-map-content">
-          <div class="search-panel">
-            <div id="search"></div>
-          </div>
+          <div id="searchPanel" class="search-panel"></div>
           <div id="distanceOptions"></div>
           <div class="hide" id="filterOptions"></div>
         </div>
-        <div role="main">
-          <div id="resultsPanel" class="main-map-content"></div>
+        <div id="detailPanel"
+          class="panel hide size-panel  phone-column-6 tablet-column-12 column-10 detail-panel  padding-left-0 padding-right-0">
         </div>
-      </div> <!-- end of wrapper -->
-      <footer class="footer tablet-show">
-        <div id="bottomNav" class="grid-container margin-left-0 margin-right-0 padding-left-0 padding-right-0">
+        <div id="filterPanel"
+          class="hide size-panel panel phone-column-6 tablet-column-12 column-10 detail-panel filter-panel">
         </div>
-      </footer>
-    </div>
-    <div id="mapPanel" tabindex="0"></div>
-  </div>
+        <div id="resultsPanel" class="main-map-content"></div>
 
+      </div> <!-- end of wrapper -->
+    </div>
+    <div id="mapPanel"></div>
+    <footer class="footer tablet-show">
+      <div id="bottomNav" class="grid-container btn-center">
+      </div>
+    </footer>
+  </div>
+  <div id="offscreenResults" aria-hidden=true></div>
 </body>
 
 </html>

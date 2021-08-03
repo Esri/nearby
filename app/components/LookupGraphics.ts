@@ -13,15 +13,19 @@
 
 
 import { property, subclass } from 'esri/core/accessorSupport/decorators';
-import Accessor = require('esri/core/Accessor');
+import Accessor from 'esri/core/Accessor';
 import Graphic from "esri/Graphic";
 import Handles from "esri/core/Handles";
 import { bufferGeometry } from '../utilites/geometryUtils';
-import { TextSymbol } from 'esri/symbols';
+import { CIMSymbol, TextSymbol } from 'esri/symbols';
 import { getBasemapTheme } from '../utilites/geometryUtils';
+import { createGoToProps, getSymbol } from "../utilites/lookupLayerUtils";
 import Color from 'esri/Color';
 import FeatureLayer from "esri/layers/FeatureLayer";
-import ConfigurationSettings = require('../ConfigurationSettings');
+import GraphicLayer from "esri/layers/GraphicsLayer";
+
+import ConfigurationSettings from '../ConfigurationSettings';
+
 interface LookupGraphicsProps {
     config: ConfigurationSettings;
     view: __esri.MapView;
@@ -48,36 +52,46 @@ class LookupGraphics extends (Accessor) {
     _theme: Color = null;
     _handles: Handles = null;
     _geometry: __esri.Geometry = null;
+    _graphicLayer: GraphicLayer = null;
     constructor(props: LookupGraphicsProps) {
         super(props);
         this._handles = new Handles();
     }
     initialize() {
-
+        this._graphicLayer = new GraphicLayer();
+        this.view.map.add(this._graphicLayer);
     }
     public updateGraphics(propName: string, enabled: boolean) {
         if (this.graphic) {
             if (propName === "drawBuffer") {
                 this._createBufferGraphic();
             }
-            if (propName === "mapPinLabel") {
+            if (propName === "mapPinSize" || propName === "mapPinLabel" || propName == "mapPinLabelColor" || propName === "mapPinLabelSize") {
                 this._createGraphicLabel();
             }
-            if (propName === "mapPin") {
+            if (propName === "mapPinIcon" || propName === "mapPinSize" || propName === "mapPin" || propName === "mapPinColor") {
                 this._createGraphicMarker();
             }
+
         }
     }
     private async _createBufferGraphic() {
-        // clear existing graphic 
-        if (this._bufferGraphic) this._removeBuffer();
+        const { singleLocationPolygons, drawBuffer, enableBufferSearch, enableBufferColor, bufferColor, bufferTransparency } = this.config;
         // If buffer isn't enabled stop
-        if (!this.config.drawBuffer) {
+
+        if (!enableBufferSearch) {
+            return;
+        }
+        if (singleLocationPolygons) {
+            return;
+        }
+        if (!drawBuffer) {
             return
         };
 
-        const fillColor = this._theme.clone();
-        fillColor.a = 0.08;
+        let fillColor = bufferColor && enableBufferColor ? new Color(bufferColor) : this._theme.clone();
+
+        fillColor.a = bufferTransparency || 0.2;
 
         const fillSymbol = {
             type: 'simple-fill',
@@ -86,73 +100,96 @@ class LookupGraphics extends (Accessor) {
                 color: this._theme
             }
         };
-        const geometry = await this._createBuffer(this.graphic.geometry);
+        const geometry = this._createBuffer(this.graphic.geometry);
+        if (!geometry) return;
+
         this._bufferGraphic = new Graphic({
             geometry,
-            symbol: fillSymbol
+            symbol: fillSymbol as any
         });
-        this.view.graphics.add(this._bufferGraphic);
-        if (geometry) {
-            await this.view.goTo(geometry);
-        }
 
+        const goToProps = createGoToProps(this._bufferGraphic, this.config);
+
+        await this.view.goTo(goToProps).then(() => {
+            this._graphicLayer.add(this._bufferGraphic);
+        }).catch(() => {
+            this._removeBuffer();
+        });
 
     }
     private _removeBuffer() {
-        if (this._bufferGraphic) this.view.graphics.remove(this._bufferGraphic);
+        if (this._bufferGraphic) this._graphicLayer.remove(this._bufferGraphic);
     }
     private async _createGraphicMarker() {
         if (this._graphicMarker) {
             // remove the existing graphic
-            this.view.graphics.remove(this._graphicMarker);
+            this._graphicLayer.remove(this._graphicMarker);
         }
-        if (!this.config.mapPin) return;
+        const { mapPinColor, mapPin } = this.config;
+        if (!mapPin) return;
+
+
+        const color = mapPinColor ? Color.fromHex(mapPinColor) : this._theme;
 
         // create the graphic 
+
         this._graphicMarker = new Graphic({
             geometry: this.graphic.geometry,
-            symbol: new TextSymbol({
-                color: this._theme,
-                text: '\ue61d',// esri-icon-map-pin
-                haloColor: this._theme,
-                yoffset: 10,
-                font: {
-                    size: 20,
-                    family: 'calcite-web-icons'
+            symbol: new CIMSymbol({
+                data: {
+                    type: "CIMSymbolReference",
+                    symbol: getSymbol(this.config, color)
                 }
             })
         });
-        this.view.graphics.add(this._graphicMarker);
+        this._graphicLayer.add(this._graphicMarker);
     }
 
     private async _createGraphicLabel() {
         if (this._graphicLabel) {
             // remove existing then create new
-            this.view.graphics.remove(this._graphicLabel);
+            this._graphicLayer.remove(this._graphicLabel);
         }
-        if (!this.config.mapPinLabel) return;
+        const { mapPinLabel, mapPinLabelColor, mapPinLabelSize, mapPinSize } = this.config;
+
+        if (!mapPinLabel) return;
+
+        const color = mapPinLabelColor ? mapPinLabelColor : this._theme;
 
         const address = this._getAddressText();
 
         // create the graphic 
+        const yoffset = mapPinSize ? `-${mapPinSize / 1.5}px` : `-${mapPinLabelSize / 1.5}px`
         this._graphicLabel = new Graphic({
             geometry: this.graphic.geometry,
             symbol: new TextSymbol({
                 font: {
-                    size: 12
+                    size: mapPinLabelSize
                 },
                 text: address,
                 haloColor: this._theme.toHex() === this._lightColor ? this._darkColor : this._lightColor,
                 haloSize: "1px",
-                color: this._theme,
-                horizontalAlignment: 'center'
+                color,
+                horizontalAlignment: 'center',
+                verticalAlignment: "top",
+                yoffset
             })
         });
-
-        this.view.graphics.add(this._graphicLabel);
+        this._graphicLayer.add(this._graphicLabel);
 
     }
-
+    private _showGraphics(): boolean {
+        const { enableBufferSearch } = this.config;
+        // add graphics if this wasn't a map button click 
+        let addGraphics = true;
+        if (!enableBufferSearch) {
+            const button = document.getElementById("mapSearchButton");
+            if (button?.classList?.contains("hide")) {
+                addGraphics = false;
+            }
+        }
+        return addGraphics;
+    }
     private _getAddressText(): string {
         // Everytime the graphic changes let's get the address text if 
         // include address text is enabled. 
@@ -163,9 +200,8 @@ class LookupGraphics extends (Accessor) {
         } else if (this.graphic?.attributes?.name) {
             address = this.graphic.attributes.name;
         } else if (this.graphic?.layer instanceof FeatureLayer) {
-            console.log("GL", this.graphic.layer);
             if (this.graphic.layer.displayField !== null) {
-                address = this.graphic.attributes[this.graphic.layer.displayField] || null;
+                address = this.graphic.attributes[this.graphic.layer.displayField] ?? null;
             } else {
                 // get the first string field
                 this.graphic.layer.fields.some((field) => {
@@ -183,7 +219,6 @@ class LookupGraphics extends (Accessor) {
 
         const buffer = bufferGeometry({
             location,
-
             distance: this.config.sliderRange.default,
             unit: this.config.searchUnits
         });
@@ -193,17 +228,29 @@ class LookupGraphics extends (Accessor) {
         const theme = await getBasemapTheme(this.view);
         this._theme = (theme === "light") ? new Color(this._lightColor) : new Color(this._darkColor);
     }
-    public async addGraphics() {
-        if (!this._theme) await this._updateTheme();
-        this._createBufferGraphic();
-        this._createGraphicLabel();
-        this._createGraphicMarker();
+    public async addGraphicsAndZoom(location) {
+        const { enableBufferSearch } = this.config;
+
+        if (!this._theme) {
+            await this._updateTheme()
+        };
+        if (!enableBufferSearch) {
+            // zoom to the extent if we don't have a buffer search defined
+            const goToProps = createGoToProps(location, this.config);
+            await this.view.goTo(goToProps);
+        } else {
+            this._createBufferGraphic();
+        }
+        if (this._showGraphics()) {
+            this._createGraphicLabel();
+            this._createGraphicMarker();
+        }
+
     }
     public clearGraphics() {
         // remove all added graphics 
-        if (this._graphicLabel) this.view.graphics.remove(this._graphicLabel);
-        if (this._graphicMarker) this.view.graphics.remove(this._graphicMarker);
-        if (this._bufferGraphic) this.view.graphics.remove(this._bufferGraphic);
+
+        this._graphicLayer?.removeAll();
         this._graphicLabel = null;
         this._bufferGraphic = null;
         this._graphicMarker = null;
